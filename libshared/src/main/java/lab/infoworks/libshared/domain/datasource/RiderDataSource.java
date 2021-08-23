@@ -6,10 +6,8 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.it.soul.lab.data.base.DataStorage;
-import com.it.soul.lab.data.simple.SimpleDataSource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,8 +16,9 @@ import java.util.function.Consumer;
 import lab.infoworks.libshared.domain.datasource.db.AppDB;
 import lab.infoworks.libshared.domain.datasource.db.dao.RiderDAO;
 import lab.infoworks.libshared.domain.model.Rider;
+import lab.infoworks.libshared.util.cachemanager.CMDataSource;
 
-public class RiderDataSource extends SimpleDataSource<Integer, Rider> implements DataStorage, AutoCloseable {
+public class RiderDataSource extends CMDataSource<Integer, Rider> implements DataStorage, AutoCloseable {
 
     private AppDB db;
     private ExecutorService executor;
@@ -40,7 +39,7 @@ public class RiderDataSource extends SimpleDataSource<Integer, Rider> implements
     public void readAsync(int offset, int pageSize, Consumer<Rider[]> consumer) {
         if (consumer != null) {
             //TODO:
-            List<Rider> items = Arrays.asList(readSync(offset, pageSize));
+            List<Rider> items = readSyncAsList(offset, pageSize);
             consumer.accept(items.toArray(new Rider[0]));
         }
     }
