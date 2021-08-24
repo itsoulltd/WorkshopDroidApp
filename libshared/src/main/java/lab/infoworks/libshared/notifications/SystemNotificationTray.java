@@ -1,4 +1,4 @@
-package lab.infoworks.libshared.util;
+package lab.infoworks.libshared.notifications;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
