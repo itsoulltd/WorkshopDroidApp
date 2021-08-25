@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import lab.infoworks.libshared.domain.datasource.db.AppDB;
 import lab.infoworks.libshared.domain.datasource.db.dao.RiderDAO;
 import lab.infoworks.libshared.domain.model.Rider;
-import lab.infoworks.libshared.util.cachemanager.CMDataSource;
 
 public class RiderDataSource extends CMDataSource<Integer, Rider> implements DataStorage, AutoCloseable {
 

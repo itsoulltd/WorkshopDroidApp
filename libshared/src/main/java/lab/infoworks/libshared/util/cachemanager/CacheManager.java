@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import lab.infoworks.libshared.domain.datasource.CMDataSource;
 import lab.infoworks.libshared.util.AppStorage;
 
 public class CacheManager<E extends Entity> {

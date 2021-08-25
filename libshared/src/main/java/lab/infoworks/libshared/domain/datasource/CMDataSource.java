@@ -1,4 +1,4 @@
-package lab.infoworks.libshared.util.cachemanager;
+package lab.infoworks.libshared.domain.datasource;
 
 import com.it.soul.lab.data.simple.SimpleDataSource;
 
