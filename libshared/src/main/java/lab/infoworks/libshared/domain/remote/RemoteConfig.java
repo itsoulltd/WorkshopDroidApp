@@ -36,23 +36,27 @@ public class RemoteConfig {
                     .build();
         }
 
-        /*Gson gson = new GsonBuilder()
-                .setLenient()
-                .create();*/
-
-        ObjectMapper mapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
-                //.addConverterFactory(GsonConverterFactory.create(gson))
-                .addConverterFactory(JacksonConverterFactory.create(mapper))
+                //.addConverterFactory(GsonConverterFactory.create(getGson()))
+                .addConverterFactory(JacksonConverterFactory.create(getMapper()))
                 .build();
 
         return retrofit.create(serviceClass);
+    }
+
+    private static ObjectMapper getMapper(){
+        return new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    private static Gson getGson(){
+        return new GsonBuilder()
+                .setLenient()
+                .create();
     }
 
 }
