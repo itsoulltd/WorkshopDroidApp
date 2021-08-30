@@ -1,4 +1,4 @@
-package lab.infoworks.libshared.ui.BaseActivity;
+package lab.infoworks.libui.BaseActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
