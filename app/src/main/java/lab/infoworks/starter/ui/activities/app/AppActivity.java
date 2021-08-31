@@ -7,16 +7,18 @@ import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import lab.infoworks.libshared.notifications.SystemNotificationTray;
+import lab.infoworks.libui.BaseActivity.BaseActivity;
 import lab.infoworks.libui.BaseActivity.BaseNetworkActivity;
 import lab.infoworks.starter.R;
 
 
-public class AppActivity extends BaseNetworkActivity {
+public class AppActivity extends AppCompatActivity {
 
     private static final String TAG = AppActivity.class.getName();
     @BindView(R.id.verificationStatusTextView)
@@ -50,6 +52,44 @@ public class AppActivity extends BaseNetworkActivity {
             verifyButton.setEnabled(true);
             notifyTray();
         });
+
+        Log.d(TAG, "onCreate");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
     }
 
     private void notifyTray(){
