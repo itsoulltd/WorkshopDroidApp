@@ -51,37 +51,37 @@ public class RiderList extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart");
+        Log.d(TAG + "-lifecycle", "onStart");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
+        Log.d(TAG + "-lifecycle", "onResume");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause");
+        Log.d(TAG + "-lifecycle", "onPause");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop");
+        Log.d(TAG + "-lifecycle", "onStop");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d(TAG, "onRestart");
+        Log.d(TAG + "-lifecycle", "onRestart");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
+        Log.d(TAG + "-lifecycle", "onDestroy");
     }
 
     @OnClick(R.id.riderButton)
