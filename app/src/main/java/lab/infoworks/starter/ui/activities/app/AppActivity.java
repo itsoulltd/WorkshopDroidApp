@@ -3,6 +3,7 @@ package lab.infoworks.starter.ui.activities.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ import lab.infoworks.starter.ui.activities.riderList.RiderList;
 public class AppActivity extends AppCompatActivity {
 
     private static final String TAG = AppActivity.class.getName();
+
     @BindView(R.id.verificationStatusTextView)
     TextView verificationStatusTextView;
 
@@ -89,7 +91,8 @@ public class AppActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.riderListButton)
-    public void findRiders() {
+    public void findRiders(View view) {
         startActivity(new Intent(this, RiderList.class));
     }
+
 }

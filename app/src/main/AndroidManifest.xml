@@ -16,16 +16,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity android:name=".ui.activities.app.AppActivity" />
+
         <activity
-            android:name=".ui.activities.riderDetail.RiderDetail"
-            android:exported="true" >
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".ui.activities.riderList.RiderList"/>
-        </activity>
+            android:name=".ui.activities.riderDetail.RiderDetail" android:parentActivityName=".ui.activities.riderList.RiderList" />
+
         <activity
-            android:name=".ui.activities.riderList.RiderList"
-            android:exported="true" >
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".ui.activities.app.AppActivity"/>
-        </activity>
+            android:name=".ui.activities.riderList.RiderList" android:parentActivityName=".ui.activities.app.AppActivity" />
+
         <activity
             android:name=".ui.activities.splash.SplashActivity"
             android:exported="true"
@@ -39,7 +38,7 @@
                 android:name="landingPage"
                 android:value="lab.infoworks.starter.ui.activities.app.AppActivity" />
         </activity>
-        <activity android:name=".ui.activities.app.AppActivity" />
+
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
