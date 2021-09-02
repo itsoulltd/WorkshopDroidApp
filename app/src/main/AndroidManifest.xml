@@ -18,10 +18,14 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.activities.riderDetail.RiderDetail"
-            android:exported="true" />
+            android:exported="true" >
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".ui.activities.riderList.RiderList"/>
+        </activity>
         <activity
             android:name=".ui.activities.riderList.RiderList"
-            android:exported="true" />
+            android:exported="true" >
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".ui.activities.app.AppActivity"/>
+        </activity>
         <activity
             android:name=".ui.activities.splash.SplashActivity"
             android:exported="true"
