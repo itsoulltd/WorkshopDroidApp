@@ -5,10 +5,11 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -82,6 +83,32 @@ public class RiderList extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG + "-lifecycle", "onDestroy");
+    }
+
+    /**
+     * How to intercept device back-button pressed:
+     */
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d(TAG + "-lifecycle", "onBackPressed");
+    }
+
+    /**
+     * How to intercept action bar back pressed:
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }else {
+            // If we got here, the user's action was not recognized.
+            // Invoke the superclass to handle it.
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @OnClick(R.id.riderButton)

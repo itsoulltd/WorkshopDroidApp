@@ -18,13 +18,12 @@
         android:theme="@style/AppTheme">
 
         <activity android:name=".ui.activities.app.AppActivity" />
-
         <activity
-            android:name=".ui.activities.riderDetail.RiderDetail" android:parentActivityName=".ui.activities.riderList.RiderList" />
-
+            android:name=".ui.activities.riderDetail.RiderDetail"
+            android:parentActivityName=".ui.activities.riderList.RiderList" />
         <activity
-            android:name=".ui.activities.riderList.RiderList" android:parentActivityName=".ui.activities.app.AppActivity" />
-
+            android:name=".ui.activities.riderList.RiderList"
+            android:parentActivityName=".ui.activities.app.AppActivity" />
         <activity
             android:name=".ui.activities.splash.SplashActivity"
             android:exported="true"
@@ -32,13 +31,14 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <meta-data
                 android:name="landingPage"
                 android:value="lab.infoworks.starter.ui.activities.app.AppActivity" />
         </activity>
-
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

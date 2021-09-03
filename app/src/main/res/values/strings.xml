@@ -3,4 +3,6 @@
     <string name="title_activity_splash">SplashActivity</string>
     <string name="hello_title">\"Hello Tray\"</string>
     <string name="hello_message">\"Hi there! welcome to app dev\"</string>
+    <string name="action_logout">MyFev</string>
+    <string name="action_settings">Settings</string>
 </resources>
