@@ -17,8 +17,17 @@ public class RiderDetail extends AppCompatActivity {
 
     private static final String TAG = RiderDetail.class.getName();
 
-    @BindView(R.id.riderDetail)
-    TextView riderDetail;
+    @BindView(R.id.riderName)
+    TextView riderName;
+
+    @BindView(R.id.riderAge)
+    TextView riderAge;
+
+    @BindView(R.id.riderGender)
+    TextView riderGender;
+
+    @BindView(R.id.riderEmail)
+    TextView riderEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +40,10 @@ public class RiderDetail extends AppCompatActivity {
         String json = intent.getStringExtra("rider_selected");
         if (json != null && !json.isEmpty()){
             Rider rider = new Rider(json);
-            riderDetail.setText("Name:" + rider.getName());
+            riderName.setText("Name:" + rider.getName());
+            riderAge.setText("Age: " + rider.getAge());
+            riderGender.setText("Gender: " + rider.getGender());
+            riderEmail.setText("Email: " + rider.getEmail());
         }
 
         //Setting Up ActionBar Title
