@@ -53,7 +53,7 @@ public class RiderList extends AppCompatActivity {
             actionBar.setTitle(R.string.rider_list_title);
         }
 
-        Log.d(TAG, "onCreate");
+        Log.d(TAG+ "-lifecycle", "onCreate");
     }
 
     @Override

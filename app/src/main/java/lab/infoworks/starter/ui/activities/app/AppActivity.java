@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,6 +55,19 @@ public class AppActivity extends AppCompatActivity {
         }
 
         Log.d(TAG + "-lifecycle", "onCreate");
+    }
+
+    /**
+     * This version of OnSaveInstanceState will automatically called by the
+     * framework when an activity closing down:
+     * @param outState
+     */
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        //Save your UI State programmatically:
+        Log.d(TAG + "-lifecycle", "onSaveInstanceState");
+        //
+        super.onSaveInstanceState(outState);
     }
 
     @Override
