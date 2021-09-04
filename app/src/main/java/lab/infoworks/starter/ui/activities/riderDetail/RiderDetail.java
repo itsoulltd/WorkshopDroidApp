@@ -1,9 +1,9 @@
 package lab.infoworks.starter.ui.activities.riderDetail;
 
-import android.app.ActionBar;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import lab.infoworks.starter.R;
@@ -18,7 +18,7 @@ public class RiderDetail extends AppCompatActivity {
         setContentView(lab.infoworks.starter.R.layout.activity_rider_detail);
 
         //Setting Up ActionBar Title
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setTitle(R.string.rider_detail_title);
         }

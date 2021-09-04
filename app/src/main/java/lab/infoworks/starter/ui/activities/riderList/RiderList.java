@@ -1,6 +1,5 @@
 package lab.infoworks.starter.ui.activities.riderList;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -48,7 +48,7 @@ public class RiderList extends AppCompatActivity {
         });
 
         //Setting Up ActionBar Title
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setTitle(R.string.rider_list_title);
         }
