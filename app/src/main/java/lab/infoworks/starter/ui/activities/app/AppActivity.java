@@ -1,5 +1,6 @@
 package lab.infoworks.starter.ui.activities.app;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,7 +35,7 @@ public class AppActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_rider);
+        setContentView(R.layout.activity_app);
         ButterKnife.bind(this);
         //We can initialize viewModel here:
         /*appViewModel = new AppViewModel(getApplication());*/
@@ -45,6 +46,12 @@ public class AppActivity extends AppCompatActivity {
             Log.d(TAG, "===> result: " + verificationResult.isVerified());
             verificationStatusTextView.setText("Rider is verified.... :) ");
         });
+
+        //Setting Up ActionBar Title
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null){
+            actionBar.setTitle(R.string.app_name);
+        }
 
         Log.d(TAG + "-lifecycle", "onCreate");
     }

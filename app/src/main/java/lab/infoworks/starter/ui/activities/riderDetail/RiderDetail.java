@@ -1,9 +1,12 @@
 package lab.infoworks.starter.ui.activities.riderDetail;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import lab.infoworks.starter.R;
 
 public class RiderDetail extends AppCompatActivity {
 
@@ -13,6 +16,13 @@ public class RiderDetail extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(lab.infoworks.starter.R.layout.activity_rider_detail);
+
+        //Setting Up ActionBar Title
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null){
+            actionBar.setTitle(R.string.rider_detail_title);
+        }
+
         Log.d(TAG + "-lifecycle", "onCreate");
     }
 

@@ -1,5 +1,6 @@
 package lab.infoworks.starter.ui.activities.riderList;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -45,6 +46,12 @@ public class RiderList extends AppCompatActivity {
             title.setText("number of riders found: " + riders.size());
             notifyTray();
         });
+
+        //Setting Up ActionBar Title
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null){
+            actionBar.setTitle(R.string.rider_list_title);
+        }
 
         Log.d(TAG, "onCreate");
     }
