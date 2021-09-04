@@ -18,6 +18,17 @@
         app:layout_constraintRight_toRightOf="parent" />
 
     <Button
+        android:id="@+id/fetchRiderButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="FETCH RIDER"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <Button
         android:id="@+id/riderButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

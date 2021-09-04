@@ -1,6 +1,7 @@
 package lab.infoworks.libshared.domain.repository.definition;
 
 import android.app.Application;
+import android.content.Context;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,6 +16,6 @@ public interface RiderRepository {
     }
 
     void findRiders(Consumer<List<Rider>> consumer);
-    void addSampleData();
+    void addSampleData(Context context);
     boolean isEmpty();
 }

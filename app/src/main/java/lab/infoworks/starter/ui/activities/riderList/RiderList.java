@@ -118,6 +118,12 @@ public class RiderList extends AppCompatActivity {
         }
     }
 
+    @OnClick(R.id.fetchRiderButton)
+    public void onFetch(View view){
+        ViewModelProviders.of(this)
+                .get(RiderListViewModel.class).findRiders();
+    }
+
     @OnClick(R.id.riderButton)
     public void onClick(View view){
         startActivity(new Intent(this, RiderDetail.class));
