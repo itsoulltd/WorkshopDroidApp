@@ -1,21 +1,38 @@
 package lab.infoworks.starter.ui.activities.riderDetail;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.starter.R;
 
 public class RiderDetail extends AppCompatActivity {
 
     private static final String TAG = RiderDetail.class.getName();
 
+    @BindView(R.id.riderDetail)
+    TextView riderDetail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(lab.infoworks.starter.R.layout.activity_rider_detail);
+        ButterKnife.bind(this);
+
+        //Read the passed rider:
+        Intent intent = getIntent();
+        String json = intent.getStringExtra("rider_selected");
+        if (json != null && !json.isEmpty()){
+            Rider rider = new Rider(json);
+            riderDetail.setText("Name:" + rider.getName());
+        }
 
         //Setting Up ActionBar Title
         ActionBar actionBar = getSupportActionBar();

@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.SystemNotificationTray;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderDetail.RiderDetail;
@@ -29,13 +30,15 @@ public class RiderList extends AppCompatActivity {
     @BindView(R.id.riderTitle)
     TextView title;
 
+    private Rider _selected;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(lab.infoworks.starter.R.layout.activity_rider_list);
+        ButterKnife.bind(this);
 
         notificationTray = new SystemNotificationTray(this);
-        ButterKnife.bind(this);
 
         //Another way of getting viewModel:
         ViewModelProviders.of(this)
@@ -43,6 +46,7 @@ public class RiderList extends AppCompatActivity {
                 .getRiderObservable().observe(this, (riders) -> {
             //
             Log.d(TAG, "===> number of riders found: " + riders.size());
+            if(riders.size() > 0) _selected = riders.get(0); //Just Pick the first one:
             title.setText("number of riders found: " + riders.size());
             notifyTray();
         });
@@ -126,7 +130,11 @@ public class RiderList extends AppCompatActivity {
 
     @OnClick(R.id.riderButton)
     public void onClick(View view){
-        startActivity(new Intent(this, RiderDetail.class));
+        Intent intent = new Intent(this, RiderDetail.class);
+        //Pass the selected Rider:
+        if(_selected != null)
+            intent.putExtra("rider_selected", _selected.toString());
+        startActivity(intent);
     }
 
     private void notifyTray(){

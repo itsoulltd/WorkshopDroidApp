@@ -4,7 +4,11 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.infoworks.lab.rest.models.Response;
+
+import java.io.IOException;
+import java.util.Map;
 
 @Entity(tableName = "rider", ignoredColumns = {"status", "error", "message", "payload", "event", "classType", "_isAutoIncremented"})
 public class Rider extends Response {
@@ -22,8 +26,19 @@ public class Rider extends Response {
 
     @Ignore
     public Rider(String name, String geoHash) {
-        this.name = name;
-        this.geoHash = geoHash;
+        this(null, name, geoHash, null, null, null);
+    }
+
+    @Ignore
+    public Rider(String json){
+        if (isValidJson(json)){
+            try {
+                Map data = unmarshal(new TypeReference<Map<String, Object>>() {}, json);
+                unmarshallingFromMap(data, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Rider(Integer id, String name, String geoHash, Integer age, String gender, String email) {
