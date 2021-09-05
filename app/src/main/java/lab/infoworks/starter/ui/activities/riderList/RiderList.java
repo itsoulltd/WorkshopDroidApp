@@ -73,14 +73,15 @@ public class RiderList extends AppCompatActivity {
             actionBar.setTitle(R.string.rider_list_title);
         }
 
+        //Handling Notifications
         NotificationCenter.addObserver(this, RIDER_SELECTED_NOTIFICATION, (context, data) -> {
             //TODO:
             String json = data.getStringExtra(RIDER_SELECTED_KEY);
-            _selected = new Rider(json);
             Integer index = Integer.valueOf(data.getStringExtra(RIDER_SELECTED_INDEX_KEY));
+            _selected = new Rider(json);
             Toast.makeText(context,String.format("Index: %s, Name: %s", index, _selected.getName()), Toast.LENGTH_SHORT).show();
 
-            //TODO:
+            //TODO: PlayWith
             //moveToDetail(_selected);
         });
 
