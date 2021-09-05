@@ -1,5 +1,6 @@
 package lab.infoworks.starter.ui.activities.riderList;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
@@ -25,12 +27,17 @@ import lab.infoworks.starter.ui.activities.riderDetail.RiderDetail;
 public class RiderList extends AppCompatActivity {
 
     private static final String TAG = RiderList.class.getName();
+    public static final String RIDER_SELECTED_KEY = "rider_selected";
+    public static final String RIDER_UPDATED_KEY = "rider_updated";
+    public static final int RIDER_DETAIL_UPDATE_REQUEST = 10001;
     private SystemNotificationTray notificationTray;
 
     @BindView(R.id.riderTitle)
     TextView title;
 
+    //FIXME: for testing
     private Rider _selected;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +51,14 @@ public class RiderList extends AppCompatActivity {
         ViewModelProviders.of(this)
                 .get(RiderListViewModel.class)
                 .getRiderObservable().observe(this, (riders) -> {
-            //
+
+            //TODO:
             Log.d(TAG, "===> number of riders found: " + riders.size());
-            if(riders.size() > 0) _selected = riders.get(0); //Just Pick the first one:
             title.setText("number of riders found: " + riders.size());
             notifyTray();
+
+            //FIXME: Just Pick the first one:
+            if(riders.size() > 0) _selected = riders.get(0);
         });
 
         //Setting Up ActionBar Title
@@ -131,10 +141,31 @@ public class RiderList extends AppCompatActivity {
     @OnClick(R.id.riderButton)
     public void onClick(View view){
         Intent intent = new Intent(this, RiderDetail.class);
-        //Pass the selected Rider:
+        //FIXME: Pass the selected Rider:
         if(_selected != null)
-            intent.putExtra("rider_selected", _selected.toString());
-        startActivity(intent);
+            intent.putExtra(RIDER_SELECTED_KEY, _selected.toString());
+
+        //This is how we normally start an activity:
+        //startActivity(intent);
+
+        //To start an activity for getting result back from calling activity
+        //need slight change on the calling method: (Since Deprecated we will check whats in New)
+        startActivityForResult(intent, RIDER_DETAIL_UPDATE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK
+                && requestCode == RIDER_DETAIL_UPDATE_REQUEST){
+            //Unpack data from intent
+            String json = data.getStringExtra(RIDER_UPDATED_KEY);
+            Rider updated = new Rider(json);
+            title.setText("Rider email: " + updated.getEmail());//
+            //TODO: In-future we update rider into persistence using
+            // viewModel calls
+            //
+        }
     }
 
     private void notifyTray(){
