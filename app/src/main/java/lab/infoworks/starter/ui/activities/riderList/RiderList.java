@@ -74,6 +74,7 @@ public class RiderList extends AppCompatActivity {
             //TODO:
             String json = data.getStringExtra(RIDER_SELECTED_KEY);
             _selected = new Rider(json);
+            //moveToDetail(_selected);
         });
 
         Log.d(TAG+ "-lifecycle", "onCreate");
@@ -150,10 +151,15 @@ public class RiderList extends AppCompatActivity {
 
     @OnClick(R.id.riderButton)
     public void onClick(View view){
+        moveToDetail(_selected);
+    }
+
+    private void moveToDetail(Rider selected) {
+        //
         Intent intent = new Intent(this, RiderDetail.class);
         //FIXME: Pass the selected Rider:
-        if(_selected != null)
-            intent.putExtra(RIDER_SELECTED_KEY, _selected.toString());
+        if(selected != null)
+            intent.putExtra(RIDER_SELECTED_KEY, selected.toString());
 
         //This is how we normally start an activity:
         //startActivity(intent);
