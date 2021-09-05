@@ -74,6 +74,7 @@ public class RiderAdapter extends RecyclerView.Adapter<RiderAdapter.ViewHolder>{
                 Rider rider = riders.get(position);
                 Map riderData = new HashMap();
                 riderData.put(RiderList.RIDER_SELECTED_KEY, rider.toString());
+                riderData.put(RiderList.RIDER_SELECTED_INDEX_KEY, position);
                 // We can access the data within the views
                 NotificationCenter.postNotification(context, RiderList.RIDER_SELECTED_NOTIFICATION, riderData);
             }

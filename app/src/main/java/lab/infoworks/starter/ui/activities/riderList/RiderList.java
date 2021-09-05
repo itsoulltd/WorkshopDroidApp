@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,11 +30,13 @@ import lab.infoworks.starter.ui.activities.riderList.recycler.RiderAdapter;
 
 public class RiderList extends AppCompatActivity {
 
-    private static final String TAG = RiderList.class.getName();
+    public static final String RIDER_SELECTED_INDEX_KEY = "rider_selected_index";
     public static final String RIDER_SELECTED_KEY = "rider_selected";
     public static final String RIDER_SELECTED_NOTIFICATION = "rider_selected_notification";
     public static final String RIDER_UPDATED_KEY = "rider_updated";
     public static final int RIDER_DETAIL_UPDATE_REQUEST = 10001;
+
+    private static final String TAG = RiderList.class.getName();
     private SystemNotificationTray notificationTray;
 
     @BindView(R.id.rvRiders)
@@ -74,6 +77,10 @@ public class RiderList extends AppCompatActivity {
             //TODO:
             String json = data.getStringExtra(RIDER_SELECTED_KEY);
             _selected = new Rider(json);
+            Integer index = Integer.valueOf(data.getStringExtra(RIDER_SELECTED_INDEX_KEY));
+            Toast.makeText(context,String.format("Index: %s, Name: %s", index, _selected.getName()), Toast.LENGTH_SHORT).show();
+
+            //TODO:
             //moveToDetail(_selected);
         });
 
