@@ -18,6 +18,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Comparator;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -41,6 +43,7 @@ public class RiderList extends AppCompatActivity {
 
     @BindView(R.id.rvRiders)
     RecyclerView rvRiders;
+    RiderAdapter rvAdapter;
 
     private Rider _selected;
 
@@ -63,6 +66,7 @@ public class RiderList extends AppCompatActivity {
 
             RiderAdapter adapter = new RiderAdapter(riders);
             rvRiders.setAdapter(adapter);
+            rvAdapter = adapter;
             rvRiders.setLayoutManager(new LinearLayoutManager(this));
             //
         });
@@ -165,7 +169,8 @@ public class RiderList extends AppCompatActivity {
     private void moveToDetail(Rider selected) {
         //
         Intent intent = new Intent(this, RiderDetail.class);
-        //FIXME: Pass the selected Rider:
+
+        //Pass the selected Rider:
         if(selected != null)
             intent.putExtra(RIDER_SELECTED_KEY, selected.toString());
 
@@ -187,6 +192,12 @@ public class RiderList extends AppCompatActivity {
             Rider updated = new Rider(json);
 
             //TODO: Update On RecyclerView:
+            if (rvAdapter != null){
+                rvAdapter.notifyItemChanged(updated, (oldOne, newOne) -> {
+                    int res = oldOne.getName().compareTo(newOne.getName());
+                    return res;
+                });
+            }
 
             //TODO: In-future we update rider into persistence using
             // viewModel calls

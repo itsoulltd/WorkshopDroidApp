@@ -9,9 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
@@ -51,6 +54,20 @@ public class RiderAdapter extends RecyclerView.Adapter<RiderAdapter.ViewHolder>{
     @Override
     public int getItemCount() {
         return (riders != null) ? riders.size() : 0;
+    }
+
+    public void notifyItemChanged(Rider updated, Comparator<Rider> comparator) {
+        //TODO:
+        if (comparator == null || updated == null) return;
+        int index = 0;
+        for (Rider rider : riders) {
+            if (comparator.compare(rider, updated) == 0)
+                break;
+            ++index;
+        }
+        Rider old = riders.get(index);
+        old.unmarshallingFromMap(updated.marshallingToMap(true), true);
+        notifyItemChanged(index);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
