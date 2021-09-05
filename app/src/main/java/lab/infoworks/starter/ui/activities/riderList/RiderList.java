@@ -31,7 +31,7 @@ public class RiderList extends AppCompatActivity {
 
     private static final String TAG = RiderList.class.getName();
     public static final String RIDER_SELECTED_KEY = "rider_selected";
-    public static final String RIDER_SELECTED_NOTIFICATION = "_notification";
+    public static final String RIDER_SELECTED_NOTIFICATION = "rider_selected_notification";
     public static final String RIDER_UPDATED_KEY = "rider_updated";
     public static final int RIDER_DETAIL_UPDATE_REQUEST = 10001;
     private SystemNotificationTray notificationTray;
