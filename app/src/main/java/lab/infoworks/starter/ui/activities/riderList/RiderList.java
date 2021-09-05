@@ -8,36 +8,38 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import lab.infoworks.libshared.domain.model.Rider;
+import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.libshared.notifications.SystemNotificationTray;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderDetail.RiderDetail;
+import lab.infoworks.starter.ui.activities.riderList.recycler.RiderAdapter;
 
 public class RiderList extends AppCompatActivity {
 
     private static final String TAG = RiderList.class.getName();
     public static final String RIDER_SELECTED_KEY = "rider_selected";
+    public static final String RIDER_SELECTED_NOTIFICATION = "_notification";
     public static final String RIDER_UPDATED_KEY = "rider_updated";
     public static final int RIDER_DETAIL_UPDATE_REQUEST = 10001;
     private SystemNotificationTray notificationTray;
 
-    @BindView(R.id.riderTitle)
-    TextView title;
+    @BindView(R.id.rvRiders)
+    RecyclerView rvRiders;
 
-    //FIXME: for testing
     private Rider _selected;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +56,12 @@ public class RiderList extends AppCompatActivity {
 
             //TODO:
             Log.d(TAG, "===> number of riders found: " + riders.size());
-            title.setText("number of riders found: " + riders.size());
             notifyTray();
 
-            //FIXME: Just Pick the first one:
-            if(riders.size() > 0) _selected = riders.get(0);
+            RiderAdapter adapter = new RiderAdapter(riders);
+            rvRiders.setAdapter(adapter);
+            rvRiders.setLayoutManager(new LinearLayoutManager(this));
+            //
         });
 
         //Setting Up ActionBar Title
@@ -66,6 +69,12 @@ public class RiderList extends AppCompatActivity {
         if (actionBar != null){
             actionBar.setTitle(R.string.rider_list_title);
         }
+
+        NotificationCenter.addObserver(this, RIDER_SELECTED_NOTIFICATION, (context, data) -> {
+            //TODO:
+            String json = data.getStringExtra(RIDER_SELECTED_KEY);
+            _selected = new Rider(json);
+        });
 
         Log.d(TAG+ "-lifecycle", "onCreate");
     }
@@ -103,6 +112,7 @@ public class RiderList extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        NotificationCenter.removeObserver(this, RIDER_SELECTED_NOTIFICATION);
         Log.d(TAG + "-lifecycle", "onDestroy");
     }
 
@@ -161,7 +171,9 @@ public class RiderList extends AppCompatActivity {
             //Unpack data from intent
             String json = data.getStringExtra(RIDER_UPDATED_KEY);
             Rider updated = new Rider(json);
-            title.setText("Rider email: " + updated.getEmail());//
+
+            //TODO: Update On RecyclerView:
+
             //TODO: In-future we update rider into persistence using
             // viewModel calls
             //
