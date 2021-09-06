@@ -8,10 +8,15 @@ import okhttp3.Response;
 
 public class BearerTokenInterceptor implements Interceptor {
 
+    private String jwtToken;
+
+    public BearerTokenInterceptor(String jwtToken) {
+        this.jwtToken = jwtToken;
+    }
+
     @Override
     public Response intercept(Chain chain) throws IOException {
-        //TODO: Get The Saved jwt-token
-        String jwt = "jwt-token";
+        String jwt = jwtToken;
         if (jwt == null || jwt.isEmpty()){
             return chain.proceed(chain.request());
         }

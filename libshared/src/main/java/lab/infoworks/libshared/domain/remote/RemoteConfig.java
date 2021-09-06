@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder;
 import java.util.concurrent.TimeUnit;
 
 import lab.infoworks.libshared.BuildConfig;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -16,33 +17,33 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RemoteConfig {
 
-    public static <ApiService> ApiService getInstance(String BASE_URL, Class<ApiService> serviceClass) {
-        //
-        OkHttpClient okHttpClient;
+    public static <ApiService> ApiService getInstance(String BASE_URL, Class<ApiService> serviceClass, Interceptor...interceptors) {
+        //Setup-Builder:
+        OkHttpClient.Builder okHttpClientBuilder;
         if (BuildConfig.DEBUG) {
-            okHttpClient = new OkHttpClient().newBuilder()
-                    .addInterceptor(new BearerTokenInterceptor())
+            okHttpClientBuilder = new OkHttpClient().newBuilder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)
-                    .sslSocketFactory(BypassHttpsForDebug.getSSLSocketFactory())
-                    .build();
+                    .sslSocketFactory(BypassHttpsForDebug.getSSLSocketFactory());
         } else {
-            okHttpClient = new OkHttpClient().newBuilder()
-                    .addInterceptor(new BearerTokenInterceptor())
+            okHttpClientBuilder = new OkHttpClient().newBuilder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
-                    .build();
+                    .writeTimeout(30, TimeUnit.SECONDS);
         }
-
+        //Setup Interceptors:
+        for (Interceptor ceptor : interceptors) {
+            okHttpClientBuilder.addInterceptor(ceptor);
+        }
+        //
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .client(okHttpClient)
+                .client(okHttpClientBuilder.build())
                 //.addConverterFactory(GsonConverterFactory.create(getGson()))
                 .addConverterFactory(JacksonConverterFactory.create(getMapper()))
                 .build();
-
+        //
         return retrofit.create(serviceClass);
     }
 
