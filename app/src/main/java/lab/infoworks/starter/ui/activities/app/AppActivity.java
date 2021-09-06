@@ -24,7 +24,7 @@ public class AppActivity extends AppCompatActivity {
 
     private static final String TAG = AppActivity.class.getName();
 
-    @BindView(R.id.verificationStatusTextView)
+    @BindView(R.id.statusTextView)
     TextView verificationStatusTextView;
 
     @BindView(R.id.verifyButton)
@@ -37,24 +37,69 @@ public class AppActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_app);
+
         ButterKnife.bind(this);
+
+        /*getString(R.string.viewStatus);
+        getDrawable(R.drawable.common_full_open_on_phone);*/
+
+        /*verificationStatusTextView = findViewById(R.id.verificationStatusTextView);
+
+        verifyButton = findViewById(R.id.verifyButton);
+        verifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                verifyRider();
+            }
+        });
+
+        Button riderListButton = findViewById(R.id.riderListButton);
+        riderListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findRiders(view);
+            }
+        });*/
+
+
+
+
+
+
+
+
+
+
+
         //We can initialize viewModel here:
         /*appViewModel = new AppViewModel(getApplication());*/
         //Following is also acceptable way of getting viewModel:
-        appViewModel = new ViewModelProvider(this).get(AppViewModel.class);
+        /*appViewModel = new ViewModelProvider(this).get(AppViewModel.class);
         appViewModel.getUserStatusObservable().observe(this, verificationResult -> {
             //
             Log.d(TAG, "===> result: " + verificationResult.isVerified());
-            verificationStatusTextView.setText("Rider is verified.... :) ");
+            //verificationStatusTextView.setText("Rider is verified.... :) ");
         });
 
         //Setting Up ActionBar Title
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setTitle(R.string.app_name);
-        }
+        }*/
 
         Log.d(TAG + "-lifecycle", "onCreate");
+    }
+
+    @OnClick(R.id.verifyButton)
+    public void verifyRider(View view) {
+        //appViewModel.verifyUser();
+    }
+
+    @OnClick(R.id.riderListButton)
+    public void findRiders(View view) {
+        Intent i = new Intent(this, RiderList.class);
+        //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(i);
     }
 
     /**
@@ -104,16 +149,6 @@ public class AppActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG + "-lifecycle", "onDestroy");
-    }
-
-    @OnClick(R.id.verifyButton)
-    public void verifyRider() {
-        appViewModel.verifyUser();
-    }
-
-    @OnClick(R.id.riderListButton)
-    public void findRiders(View view) {
-        startActivity(new Intent(this, RiderList.class));
     }
 
 }

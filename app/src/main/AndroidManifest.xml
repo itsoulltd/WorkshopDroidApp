@@ -16,7 +16,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity
+            android:name=".ui.activities.myAct.MyAct"
+            android:exported="true" />
         <activity android:name=".ui.activities.app.AppActivity" />
         <activity
             android:name=".ui.activities.riderDetail.RiderDetail"

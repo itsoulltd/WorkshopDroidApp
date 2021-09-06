@@ -7,7 +7,7 @@
     tools:context=".ui.activities.app.AppActivity">
 
     <TextView
-        android:id="@+id/verificationStatusTextView"
+        android:id="@+id/statusTextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -16,7 +16,7 @@
         android:freezesText="true"
         android:padding="8dp"
         android:scrollbars="vertical"
-        android:text="Hello"
+        android:text="@string/viewStatus"
         android:textSize="24sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
