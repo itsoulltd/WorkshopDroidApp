@@ -194,7 +194,7 @@ public class RiderList extends AppCompatActivity {
             //TODO: Update On RecyclerView:
             if (rvAdapter != null){
                 rvAdapter.notifyItemChanged(updated, (oldOne, newOne) -> {
-                    int res = oldOne.getName().compareTo(newOne.getName());
+                    int res = oldOne.getId().compareTo(newOne.getId());
                     return res;
                 });
             }
