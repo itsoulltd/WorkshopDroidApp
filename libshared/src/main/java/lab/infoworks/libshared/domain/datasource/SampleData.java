@@ -20,7 +20,7 @@ public class SampleData {
     }
 
     public static Rider[] getRidersFrom(Context context){
-        Map<String, Object> data = AssetManager.readJsonObject(context, "data/rider-mock-data.json").get(0);
+        Map<String, Object> data = AssetManager.readJsonObject(context, "data/rider-mock-data-small.json").get(0);
         List<Map<String, Object>> findRiders = (List<Map<String, Object>>) data.get("findRiders");
         List<Rider> res = findRiders
                 .stream()
