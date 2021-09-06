@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    app:cardBackgroundColor="#EAE3E3"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="1dp"
+    app:cardUseCompatPadding="true"
+    app:contentPaddingBottom="10dp"
+    app:contentPaddingLeft="6dp"
+    app:contentPaddingRight="6dp"
+    app:contentPaddingTop="10dp">
+
+    <include layout="@layout/item_rider" />
+
+</androidx.cardview.widget.CardView>

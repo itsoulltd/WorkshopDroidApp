@@ -18,7 +18,7 @@
 
     <TextView
         android:id="@+id/riderName"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:text="Name: "
@@ -32,7 +32,7 @@
 
     <TextView
         android:id="@+id/riderAge"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
@@ -47,7 +47,7 @@
 
     <TextView
         android:id="@+id/riderGender"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
