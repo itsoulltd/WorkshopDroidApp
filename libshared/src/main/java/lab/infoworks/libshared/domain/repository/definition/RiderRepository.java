@@ -11,8 +11,8 @@ import lab.infoworks.libshared.domain.repository.impl.RiderRepositoryImpl;
 
 public interface RiderRepository {
 
-    static RiderRepository create(Application application) {
-        return new RiderRepositoryImpl(application);
+    static RiderRepository create(Application application, String localFirst, String baseUrl) {
+        return new RiderRepositoryImpl(application, localFirst, baseUrl);
     }
 
     void findRiders(Consumer<List<Rider>> consumer);

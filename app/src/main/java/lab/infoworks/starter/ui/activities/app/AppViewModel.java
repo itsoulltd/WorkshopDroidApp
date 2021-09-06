@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import lab.infoworks.libshared.domain.model.VerificationResult;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
+import lab.infoworks.starter.BuildConfig;
 
 public class AppViewModel extends AndroidViewModel {
 
@@ -26,5 +27,5 @@ public class AppViewModel extends AndroidViewModel {
         userStatusLiveData.postValue(new VerificationResult(true));
     }
 
-    private RiderRepository riderRepository = RiderRepository.create(getApplication());
+    private RiderRepository riderRepository = RiderRepository.create(getApplication(), BuildConfig.offline_mode, BuildConfig.api_gateway);
 }

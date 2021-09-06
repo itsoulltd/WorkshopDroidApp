@@ -22,8 +22,8 @@ public class RiderRepositoryImpl implements RiderRepository {
 
     private final DataSource<Integer, Rider> dataSource;
 
-    public RiderRepositoryImpl(Context context) {
-        this.dataSource = new RiderDataSource(context);
+    public RiderRepositoryImpl(Context context, String localFirst, String baseUrl) {
+        this.dataSource = new RiderDataSource(context, localFirst, baseUrl);
     }
 
     @Override @RequiresApi(Build.VERSION_CODES.N)
