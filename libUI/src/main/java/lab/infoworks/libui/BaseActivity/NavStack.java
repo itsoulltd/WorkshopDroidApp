@@ -1,23 +1,27 @@
-package lab.infoworks.starter.ui.activities.app;
+package lab.infoworks.libui.BaseActivity;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import lab.infoworks.starter.R;
-
 public class NavStack {
 
-    public static NavStack create(FragmentManager manager){
-        return new NavStack(manager);
+    public static NavStack create(AppCompatActivity activity, int containerId){
+        return new NavStack(containerId, activity.getSupportFragmentManager(), activity.getSupportActionBar());
     }
 
     private FragmentManager manager;
+    private ActionBar actionBar;
+    private int fragContainerId;
 
-    private NavStack(FragmentManager manager) {
+    private NavStack(int containerId, FragmentManager manager, ActionBar actionBar) {
+        this.fragContainerId = containerId;
         this.manager = manager;
+        this.actionBar = actionBar;
     }
 
     public FragmentManager getSupportFragmentManager() {
@@ -33,8 +37,12 @@ public class NavStack {
             tagStack.add(0, tag);
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragmentContainer, fragment, tag)
+                    .replace(fragContainerId, fragment, tag)
                     .commit();
+            //Handle back-arrow
+            if (actionBar != null){
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
         }
     }
 
@@ -50,11 +58,22 @@ public class NavStack {
         fragment = navStack.remove(0);
         String tag = tagStack.remove(0);
         pushNavStack(fragment, tag);
+        //handle back-arrow
+        if (isOnTop()){
+            if (actionBar != null){
+                actionBar.setDisplayHomeAsUpEnabled(false);
+            }
+        }
     }
 
     public void close() {
         manager = null;
+        actionBar = null;
         navStack.clear();
         tagStack.clear();
+    }
+
+    public boolean isOnTop(){
+        return (navStack.size() == 1) ? true : false;
     }
 }

@@ -2,6 +2,7 @@ package lab.infoworks.starter.ui.activities.app;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import com.infoworks.lab.rest.models.Message;
 
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
+import lab.infoworks.libui.BaseActivity.NavStack;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderDetail.RiderFragment;
 import lab.infoworks.starter.ui.activities.riderList.RiderListViewModel;
@@ -38,13 +40,13 @@ public class AppActivity extends AppCompatActivity {
             actionBar.setTitle(R.string.app_name);
         }
 
-        navStack = NavStack.create(getSupportFragmentManager());
+        navStack = NavStack.create(this, R.id.fragmentContainer);
         if (savedInstanceState == null){
             navStack.pushNavStack(getSupportFragmentManager().findFragmentByTag("AppFragment"), null);
         }
 
         //Handling Notifications
-        NotificationCenter.addObserver(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT, (context, data) -> {
+        NotificationCenter.addObserverOnMain(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT, (context, data) -> {
             //TODO:
             String payload = data.getStringExtra("payload");
             Message msg = new Message().setPayload(payload);
@@ -55,7 +57,7 @@ public class AppActivity extends AppCompatActivity {
         });
 
         //Handling Notifications
-        NotificationCenter.addObserver(this, RidersFragment.RIDER_SELECTED_NOTIFICATION, (context, data) -> {
+        NotificationCenter.addObserverOnMain(this, RidersFragment.RIDER_SELECTED_NOTIFICATION, (context, data) -> {
             //TODO:
             String json = data.getStringExtra(RidersFragment.RIDER_SELECTED_KEY);
             Integer index = Integer.valueOf(data.getStringExtra(RidersFragment.RIDER_SELECTED_INDEX_KEY));
@@ -65,10 +67,15 @@ public class AppActivity extends AppCompatActivity {
             //TODO: PlayWith
             Fragment fragment = RiderFragment.newInstance(selected);
             navStack.pushNavStack(fragment, "RiderFragment");
+
+            //If-want to change back-arrow icon:
+            /*if (actionBar != null){
+                actionBar.setHomeAsUpIndicator(R.drawable.def_checker);
+            }*/
         });
 
         //Handling Notifications
-        NotificationCenter.addObserver(this, RidersFragment.RIDER_UPDATED_NOTIFICATION, (context, data) -> {
+        NotificationCenter.addObserverOnMain(this, RidersFragment.RIDER_UPDATED_NOTIFICATION, (context, data) -> {
             //Unpack data from intent
             String json = data.getStringExtra(RidersFragment.RIDER_UPDATED_KEY);
             Rider updated = new Rider(json);
@@ -108,8 +115,19 @@ public class AppActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
         Log.d(TAG + "-lifecycle", "onBackPressed");
         navStack.popNavStack();
         //super.onBackPressed();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home){
+            onBackPressed();
+            return true;
+        }else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 }
