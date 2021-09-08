@@ -7,16 +7,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.infoworks.lab.rest.models.Message;
 
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
+import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 
 
 public class AppActivity extends AppCompatActivity {
 
     private static final String TAG = AppActivity.class.getName();
+
+    private NavStack navStack;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,11 +33,19 @@ public class AppActivity extends AppCompatActivity {
             actionBar.setTitle(R.string.app_name);
         }
 
+        navStack = NavStack.create(getSupportFragmentManager());
+        if (savedInstanceState == null){
+            navStack.pushNavStack(getSupportFragmentManager().findFragmentByTag("AppFragment"), null);
+        }
+
         NotificationCenter.addObserver(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT, (context, data) -> {
             //TODO:
             String payload = data.getStringExtra("payload");
             Message msg = new Message().setPayload(payload);
-            moveToRiders(msg);
+            Log.d(TAG, "Click moveToRiders: " + msg.getPayload());
+            //TODO:
+            Fragment fragment = RidersFragment.newInstance();
+            navStack.pushNavStack(fragment, "RidersFragment");
         });
 
         Log.d(TAG + "-lifecycle", "onCreate");
@@ -53,45 +65,17 @@ public class AppActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG + "-lifecycle", "onStart");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG + "-lifecycle", "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG + "-lifecycle", "onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG + "-lifecycle", "onStop");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d(TAG + "-lifecycle", "onRestart");
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG + "-lifecycle", "onDestroy");
         NotificationCenter.removeObserver(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT);
+        navStack.close();
     }
 
-    public void moveToRiders(Message msg) {
-        //startActivity(new Intent(this, RiderList.class));
-        Log.d(TAG, "Click moveToRiders: " + msg.getPayload());
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG + "-lifecycle", "onBackPressed");
+        navStack.popNavStack();
+        //super.onBackPressed();
     }
-
 }

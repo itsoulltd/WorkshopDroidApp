@@ -13,7 +13,7 @@ import java.util.Map;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
-import lab.infoworks.starter.ui.activities.riderList.RiderList;
+import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 
 public class RiderCellViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
@@ -45,10 +45,10 @@ public class RiderCellViewHolder extends RecyclerView.ViewHolder implements View
         if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
             Rider rider = this.rider;
             Map riderData = new HashMap();
-            riderData.put(RiderList.RIDER_SELECTED_KEY, rider.toString());
-            riderData.put(RiderList.RIDER_SELECTED_INDEX_KEY, position);
+            riderData.put(RidersFragment.RIDER_SELECTED_KEY, rider.toString());
+            riderData.put(RidersFragment.RIDER_SELECTED_INDEX_KEY, position);
             // We can access the data within the views
-            NotificationCenter.postNotification(context, RiderList.RIDER_SELECTED_NOTIFICATION, riderData);
+            NotificationCenter.postNotification(context, RidersFragment.RIDER_SELECTED_NOTIFICATION, riderData);
         }
     }
 }
