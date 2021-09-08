@@ -1,10 +1,6 @@
 package lab.infoworks.starter.ui.activities.app;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +8,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.infoworks.lab.rest.models.Message;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.infoworks.lab.rest.models.Message;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,8 +36,6 @@ public class AppFragment extends Fragment {
 
     @BindView(R.id.statusButton)
     Button statusButton;
-
-    private AppViewModel appViewModel;
 
     private static final String ARG_TITLE = "title";
     private String fragTitle = "Hello Fragments";
@@ -74,11 +68,11 @@ public class AppFragment extends Fragment {
         unbinder = ButterKnife.bind(this, view);
 
         statusTextView.setText(fragTitle);
-        //We can initialize viewModel here:
-        //appViewModel = new AppViewModel(getActivity().getApplication());
-        //Following is also acceptable way of getting viewModel:
-        appViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-        appViewModel.getUserStatusObservable()
+        //
+        ViewModelProviders
+                .of(this)
+                .get(AppViewModel.class)
+                .getUserStatusObservable()
                 .observe(getViewLifecycleOwner(), verificationResult -> {
             //
             Log.d(TAG, "===> result: " + verificationResult.isVerified());
@@ -98,7 +92,10 @@ public class AppFragment extends Fragment {
     public void verifyRider() {
         //TODO:
         Log.d(TAG, "verifyRider clicked");
-        appViewModel.verifyUser();
+        ViewModelProviders
+                .of(this)
+                .get(AppViewModel.class)
+                .verifyUser();
     }
 
     @OnClick(R.id.moveToRidersButton)

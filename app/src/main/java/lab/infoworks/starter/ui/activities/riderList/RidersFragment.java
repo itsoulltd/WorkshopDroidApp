@@ -65,7 +65,7 @@ public class RidersFragment extends Fragment {
         unbinder = ButterKnife.bind(this, view);
 
         //Another way of getting viewModel:
-        ViewModelProviders.of(this)
+        ViewModelProviders.of(getActivity())
                 .get(RiderListViewModel.class)
                 .getRiderObservable()
                 .observe(getViewLifecycleOwner(), (riders) -> {
@@ -82,6 +82,15 @@ public class RidersFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        ViewModelProviders
+                .of(getActivity())
+                .get(RiderListViewModel.class)
+                .findRiders();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
@@ -89,8 +98,10 @@ public class RidersFragment extends Fragment {
 
     @OnClick(R.id.loadRiders)
     public void onFetch(View view){
-        ViewModelProviders.of(this)
-                .get(RiderListViewModel.class).findRiders();
+        ViewModelProviders
+                .of(getActivity())
+                .get(RiderListViewModel.class)
+                .findRiders();
     }
 
 }

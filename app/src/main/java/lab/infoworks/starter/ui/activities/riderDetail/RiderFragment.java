@@ -15,6 +15,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
@@ -31,6 +32,7 @@ public class RiderFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private Rider rider;
 
+    private Unbinder unbinder;
     @BindView(R.id.frgRiderName)
     TextView riderName;
 
@@ -69,7 +71,7 @@ public class RiderFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_rider, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
 
         if (rider != null){
             riderName.setText("Name:" + rider.getName());
@@ -81,11 +83,16 @@ public class RiderFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
     @OnClick(R.id.saveRider)
     public void save(View view){
         if (rider != null){
             rider.setEmail(riderEmail.getText().toString());
-
             //Prepare for back the result:
             Map<String, Object> data  = new HashMap<>();
             data.put(RidersFragment.RIDER_UPDATED_KEY, rider.toString());

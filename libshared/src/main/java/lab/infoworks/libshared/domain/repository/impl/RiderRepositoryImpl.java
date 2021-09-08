@@ -23,7 +23,7 @@ public class RiderRepositoryImpl implements RiderRepository {
     private final DataSource<Integer, Rider> dataSource;
 
     public RiderRepositoryImpl(Context context) {
-        this.dataSource = new RiderDataSource(context);
+        dataSource = new RiderDataSource(context);
     }
 
     @Override @RequiresApi(Build.VERSION_CODES.N)
@@ -41,15 +41,21 @@ public class RiderRepositoryImpl implements RiderRepository {
     }
 
     @Override
-    public void addSampleData(Context context) {
-        for (Rider rider : SampleData.getRidersFrom(context)) {
-            dataSource.add(rider);
-        }
-        ((DataStorage)dataSource).save(true);
+    public boolean isEmpty() {
+        return dataSource.size() <= 0;
     }
 
     @Override
-    public boolean isEmpty() {
-        return dataSource.size() <= 0;
+    public void update(Rider updated) {
+        dataSource.replace(updated.getId(), updated);
+    }
+
+    @Override
+    public void addSampleData(Context context) {
+        int idx = 0;
+        for (Rider rider : SampleData.getRidersFrom(context)) {
+            dataSource.put(++idx, rider);
+        }
+        ((DataStorage)dataSource).save(true);
     }
 }

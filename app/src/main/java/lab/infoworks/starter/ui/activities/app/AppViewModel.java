@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.domain.model.VerificationResult;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
 
@@ -27,4 +28,5 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     private RiderRepository riderRepository = RiderRepository.create(getApplication());
+
 }

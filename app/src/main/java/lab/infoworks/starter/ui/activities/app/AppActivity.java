@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.infoworks.lab.rest.models.Message;
 
@@ -16,6 +17,7 @@ import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderDetail.RiderFragment;
+import lab.infoworks.starter.ui.activities.riderList.RiderListViewModel;
 import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 
 
@@ -71,7 +73,10 @@ public class AppActivity extends AppCompatActivity {
             String json = data.getStringExtra(RidersFragment.RIDER_UPDATED_KEY);
             Rider updated = new Rider(json);
             //TODO: In-future we update rider into persistence using
-            // viewModel calls
+            ViewModelProviders
+                    .of(this)
+                    .get(RiderListViewModel.class)
+                    .updateRider(updated);
             //TODO:
             navStack.popNavStack();
         });
