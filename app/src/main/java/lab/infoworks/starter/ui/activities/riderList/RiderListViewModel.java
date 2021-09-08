@@ -19,12 +19,16 @@ public class RiderListViewModel extends AndroidViewModel {
     }
 
     private MutableLiveData<List<Rider>> riderLiveData = new MutableLiveData<>();
+
     private RiderRepository riderRepository = RiderRepository.create(getApplication());
+
     public LiveData<List<Rider>> getRiderObservable() {
         return riderLiveData;
     }
 
     public void findRiders() {
-        riderRepository.findRiders((riders) -> riderLiveData.postValue(riders));
+        riderRepository.findRiders((riders) -> {
+            riderLiveData.postValue(riders);
+        });
     }
 }

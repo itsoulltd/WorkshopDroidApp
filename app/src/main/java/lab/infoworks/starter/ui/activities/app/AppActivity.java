@@ -42,7 +42,8 @@ public class AppActivity extends AppCompatActivity {
         /*appViewModel = new AppViewModel(getApplication());*/
         //Following is also acceptable way of getting viewModel:
         appViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-        appViewModel.getUserStatusObservable().observe(this, verificationResult -> {
+        appViewModel.getUserStatusObservable()
+                .observe(this, verificationResult -> {
             //
             Log.d(TAG, "===> result: " + verificationResult.isVerified());
             verificationStatusTextView.setText("Rider is verified.... :) ");
@@ -55,49 +56,6 @@ public class AppActivity extends AppCompatActivity {
         }
 
         Log.d(TAG + "-lifecycle", "onCreate");
-    }
-
-    /**
-     * This version of OnSaveInstanceState will automatically called by the
-     * framework when an activity closing down:
-     * @param outState
-     */
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        //Save your UI State programmatically:
-        Log.d(TAG + "-lifecycle", "onSaveInstanceState");
-        //
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG + "-lifecycle", "onStart");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG + "-lifecycle", "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG + "-lifecycle", "onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG + "-lifecycle", "onStop");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d(TAG + "-lifecycle", "onRestart");
     }
 
     @Override
