@@ -19,12 +19,6 @@
 
         <activity android:name=".ui.activities.app.AppActivity" />
         <activity
-            android:name=".ui.activities.riderDetail.RiderDetail"
-            android:parentActivityName=".ui.activities.riderList.RiderList" />
-        <activity
-            android:name=".ui.activities.riderList.RiderList"
-            android:parentActivityName=".ui.activities.app.AppActivity" />
-        <activity
             android:name=".ui.activities.splash.SplashActivity"
             android:exported="true"
             android:label="@string/title_activity_splash"
