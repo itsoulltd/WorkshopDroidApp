@@ -1,24 +1,20 @@
 package lab.infoworks.starter.ui.activities.riderList;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import lab.infoworks.libshared.domain.model.Rider;
-import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderList.recycler.RiderAdapter;
 
@@ -35,6 +31,7 @@ public class RidersFragment extends Fragment {
     public static final String RIDER_SELECTED_KEY = "rider_selected";
     public static final String RIDER_SELECTED_NOTIFICATION = "rider_selected_notification";
     public static final String RIDER_UPDATED_KEY = "rider_updated";
+    public static final String RIDER_UPDATED_NOTIFICATION = "rider_update_notification";
 
     private Unbinder unbinder;
     @BindView(R.id.rvFrgRiders)
@@ -79,18 +76,6 @@ public class RidersFragment extends Fragment {
             rvAdapter = adapter;
             rvRiders.setLayoutManager(new LinearLayoutManager(getActivity()));
             //
-        });
-
-        //Handling Notifications
-        NotificationCenter.addObserver(getContext(), RIDER_SELECTED_NOTIFICATION, (context, data) -> {
-            //TODO:
-            String json = data.getStringExtra(RIDER_SELECTED_KEY);
-            Integer index = Integer.valueOf(data.getStringExtra(RIDER_SELECTED_INDEX_KEY));
-            Rider selected = new Rider(json);
-            Toast.makeText(context,String.format("Index: %s, Name: %s", index, selected.getName()), Toast.LENGTH_SHORT).show();
-
-            //TODO: PlayWith
-            //moveToDetail(_selected);
         });
 
         return view;
