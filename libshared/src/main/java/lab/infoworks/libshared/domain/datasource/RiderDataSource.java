@@ -89,11 +89,11 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
                                 public void onResponse(Call<List<Rider>> call, Response<List<Rider>> response) {
                                     List<Rider> riders = response.body();
                                     Log.d("RIDER-API", "Size: " + response.body().size());
-                                    riders.stream()
-                                            .forEach(rdr -> {
-                                                rdr.setId(null);
-                                                add(rdr);
-                                            });
+                                    int idx = items.size() - 1;
+                                    for (Rider rdr : riders) {
+                                        rdr.setId(++idx);
+                                        put(idx, rdr);
+                                    }
                                     //Update Local-Store:
                                     save(true);
                                     //Notify UI Again

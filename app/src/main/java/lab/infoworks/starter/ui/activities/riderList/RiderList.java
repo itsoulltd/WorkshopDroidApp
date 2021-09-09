@@ -191,7 +191,7 @@ public class RiderList extends AppCompatActivity {
             String json = data.getStringExtra(RIDER_UPDATED_KEY);
             Rider updated = new Rider(json);
 
-            //TODO: Update On RecyclerView:
+            //Update On RecyclerView:
             if (rvAdapter != null){
                 rvAdapter.notifyItemChanged(updated, (oldOne, newOne) -> {
                     int res = oldOne.getId().compareTo(newOne.getId());
@@ -199,8 +199,10 @@ public class RiderList extends AppCompatActivity {
                 });
             }
 
-            //TODO: In-future we update rider into persistence using
-            // viewModel calls
+            //We update rider into persistence using
+            ViewModelProviders.of(this)
+                    .get(RiderListViewModel.class)
+                    .update(updated);
             //
         }
     }
