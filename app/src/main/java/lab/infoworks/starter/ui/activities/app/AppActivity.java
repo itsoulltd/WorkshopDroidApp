@@ -83,7 +83,7 @@ public class AppActivity extends AppCompatActivity {
             ViewModelProviders
                     .of(this)
                     .get(RiderListViewModel.class)
-                    .updateRider(updated);
+                    .update(updated);
             //TODO:
             navStack.popNavStack();
         });
