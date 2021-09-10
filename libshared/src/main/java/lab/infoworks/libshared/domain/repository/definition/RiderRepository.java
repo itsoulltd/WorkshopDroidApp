@@ -16,7 +16,7 @@ public interface RiderRepository {
     }
 
     void findRiders(Consumer<List<Rider>> consumer);
-    void update(Rider rider);
+    void update(Rider updated);
     boolean isEmpty();
     void addSampleData(Context context);
 }

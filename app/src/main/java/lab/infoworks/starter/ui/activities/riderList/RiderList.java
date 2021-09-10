@@ -199,7 +199,7 @@ public class RiderList extends AppCompatActivity {
                 });
             }
 
-            //We update rider into persistence using
+            //we update rider into persistence using
             ViewModelProviders.of(this)
                     .get(RiderListViewModel.class)
                     .update(updated);
