@@ -19,7 +19,6 @@ import butterknife.Unbinder;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
-import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,8 +28,11 @@ import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 public class RiderFragment extends Fragment {
 
     private static final String TAG = RiderFragment.class.getName();
-    private static final String ARG_PARAM1 = "param1";
+    public static final String RIDER_UPDATED_KEY = "rider_updated";
+    public static final String RIDER_UPDATED_INDEX_KEY = "rider_updated_index";
+    public static final String RIDER_UPDATED_NOTIFICATION = "rider_update_notification";
     private Rider rider;
+    private Integer index;
 
     private Unbinder unbinder;
     @BindView(R.id.frgRiderName)
@@ -49,10 +51,11 @@ public class RiderFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static RiderFragment newInstance(Rider rider) {
+    public static RiderFragment newInstance(Rider rider, Integer index) {
         RiderFragment fragment = new RiderFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, rider.toString());
+        args.putString(RIDER_UPDATED_KEY, rider.toString());
+        args.putString(RIDER_UPDATED_INDEX_KEY, index.toString());
         fragment.setArguments(args);
         return fragment;
     }
@@ -61,8 +64,8 @@ public class RiderFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            String json = getArguments().getString(ARG_PARAM1);
-            rider = new Rider(json);
+            rider = new Rider(getArguments().getString(RIDER_UPDATED_KEY));
+            index = Integer.valueOf(getArguments().getString(RIDER_UPDATED_INDEX_KEY));
         }
     }
 
@@ -95,8 +98,9 @@ public class RiderFragment extends Fragment {
             rider.setEmail(riderEmail.getText().toString());
             //Prepare for back the result:
             Map<String, Object> data  = new HashMap<>();
-            data.put(RidersFragment.RIDER_UPDATED_KEY, rider.toString());
-            NotificationCenter.postNotification(getContext(), RidersFragment.RIDER_UPDATED_NOTIFICATION, data);
+            data.put(RiderFragment.RIDER_UPDATED_KEY, rider.toString());
+            data.put(RiderFragment.RIDER_UPDATED_INDEX_KEY, index);
+            NotificationCenter.postNotification(getContext(), RiderFragment.RIDER_UPDATED_NOTIFICATION, data);
         }
     }
 }

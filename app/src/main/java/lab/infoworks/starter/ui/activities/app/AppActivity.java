@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.infoworks.lab.rest.models.Message;
+import com.it.soul.lab.sql.query.models.Property;
 
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
@@ -59,13 +60,12 @@ public class AppActivity extends AppCompatActivity {
         //Handling Notifications
         NotificationCenter.addObserverOnMain(this, RidersFragment.RIDER_SELECTED_NOTIFICATION, (context, data) -> {
             //TODO:
-            String json = data.getStringExtra(RidersFragment.RIDER_SELECTED_KEY);
             Integer index = Integer.valueOf(data.getStringExtra(RidersFragment.RIDER_SELECTED_INDEX_KEY));
-            Rider selected = new Rider(json);
+            Rider selected = new Rider(data.getStringExtra(RidersFragment.RIDER_SELECTED_KEY));
             Toast.makeText(context,String.format("Index: %s, Name: %s", index, selected.getName()), Toast.LENGTH_SHORT).show();
 
             //TODO: PlayWith
-            Fragment fragment = RiderFragment.newInstance(selected);
+            Fragment fragment = RiderFragment.newInstance(selected, index);
             navStack.pushNavStack(fragment, "RiderFragment");
 
             //If-want to change back-arrow icon:
@@ -75,17 +75,19 @@ public class AppActivity extends AppCompatActivity {
         });
 
         //Handling Notifications
-        NotificationCenter.addObserverOnMain(this, RidersFragment.RIDER_UPDATED_NOTIFICATION, (context, data) -> {
+        NotificationCenter.addObserverOnMain(this, RiderFragment.RIDER_UPDATED_NOTIFICATION, (context, data) -> {
             //Unpack data from intent
-            String json = data.getStringExtra(RidersFragment.RIDER_UPDATED_KEY);
-            Rider updated = new Rider(json);
-            //TODO: In-future we update rider into persistence using
+            Rider updated = new Rider(data.getStringExtra(RiderFragment.RIDER_UPDATED_KEY));
+            //We update rider into persistence using
             ViewModelProviders
                     .of(this)
                     .get(RiderListViewModel.class)
                     .update(updated);
-            //TODO:
-            navStack.popNavStack();
+            //Set the updated item's index to scroll to that position:
+            Integer index = Integer.valueOf(data.getStringExtra(RiderFragment.RIDER_UPDATED_INDEX_KEY));
+            navStack.popNavStack(
+                    new Property(RidersFragment.RIDER_SELECTED_INDEX_KEY, index)
+            );
         });
 
         Log.d(TAG + "-lifecycle", "onCreate");
@@ -110,6 +112,7 @@ public class AppActivity extends AppCompatActivity {
         Log.d(TAG + "-lifecycle", "onDestroy");
         NotificationCenter.removeObserver(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT);
         NotificationCenter.removeObserver(this, RidersFragment.RIDER_SELECTED_NOTIFICATION);
+        NotificationCenter.removeObserver(this, RiderFragment.RIDER_UPDATED_NOTIFICATION);
         navStack.close();
     }
 
