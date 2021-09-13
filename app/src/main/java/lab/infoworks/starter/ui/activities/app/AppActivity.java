@@ -11,6 +11,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 
 import com.infoworks.lab.rest.models.Message;
 import com.it.soul.lab.sql.query.models.Property;
@@ -28,12 +31,10 @@ public class AppActivity extends AppCompatActivity {
 
     private static final String TAG = AppActivity.class.getName();
 
-    private NavStack navStack;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app);
+        setContentView(R.layout.activity_app_v2);
         /**/
         //Setting Up ActionBar Title
         ActionBar actionBar = getSupportActionBar();
@@ -41,18 +42,19 @@ public class AppActivity extends AppCompatActivity {
             actionBar.setTitle(R.string.app_name);
         }
 
-        navStack = NavStack.create(this, R.id.fragmentContainer);
-        navStack.initStackWithFragment("AppFragment");
-
         //Handling Notifications
         NotificationCenter.addObserverOnMain(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT, (context, data) -> {
             //TODO:
             String payload = data.getStringExtra("payload");
             Message msg = new Message().setPayload(payload);
             Log.d(TAG, "Click moveToRiders: " + msg.getPayload());
-            //TODO:
-            Fragment fragment = RidersFragment.newInstance();
-            navStack.pushNavStack(fragment, "RidersFragment");
+
+            //Using NavController
+            if (actionBar != null){
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
+            NavController controller = Navigation.findNavController(this, R.id.nav_host);
+            controller.navigate(R.id.action_appFragment_to_ridersFragment);
         });
 
         //Handling Notifications
@@ -62,14 +64,16 @@ public class AppActivity extends AppCompatActivity {
             Rider selected = new Rider(data.getStringExtra(RidersFragment.RIDER_SELECTED_KEY));
             Toast.makeText(context,String.format("Index: %s, Name: %s", index, selected.getName()), Toast.LENGTH_SHORT).show();
 
-            //TODO: PlayWith
-            Fragment fragment = RiderFragment.newInstance(selected, index);
-            navStack.pushNavStack(fragment, "RiderFragment");
-
-            //If-want to change back-arrow icon:
-            /*if (actionBar != null){
-                actionBar.setHomeAsUpIndicator(R.drawable.def_checker);
-            }*/
+            //Using NavController
+            if (actionBar != null){
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
+            NavController controller = Navigation.findNavController(this, R.id.nav_host);
+            Bundle bundle = NavStack.createBundle(
+                    new Property(RiderFragment.RIDER_UPDATED_INDEX_KEY, index)
+                    , new Property(RiderFragment.RIDER_UPDATED_KEY, selected.toString())
+            );
+            controller.navigate(R.id.action_ridersFragment_to_riderFragment, bundle);
         });
 
         //Handling Notifications
@@ -83,9 +87,18 @@ public class AppActivity extends AppCompatActivity {
                     .update(updated);
             //Set the updated item's index to scroll to that position:
             Integer index = Integer.valueOf(data.getStringExtra(RiderFragment.RIDER_UPDATED_INDEX_KEY));
-            navStack.popNavStack(
+
+            //Using NavController
+            NavController controller = Navigation.findNavController(this, R.id.nav_host);
+            Bundle bundle = NavStack.createBundle(
                     new Property(RidersFragment.RIDER_SELECTED_INDEX_KEY, index)
             );
+            controller.navigate(R.id.action_riderFragment_to_ridersFragment, bundle);
+            //In case we did not set popUpTo attribute in nev_graph,
+            //following is programmatic way of doing:
+            /*controller.navigate(R.id.action_riderFragment_to_ridersFragment
+                    , bundle
+                    , new NavOptions.Builder().setPopUpTo(R.id.ridersFragment, true).build());*/
         });
 
         Log.d(TAG + "-lifecycle", "onCreate");
@@ -111,16 +124,17 @@ public class AppActivity extends AppCompatActivity {
         NotificationCenter.removeObserver(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT);
         NotificationCenter.removeObserver(this, RidersFragment.RIDER_SELECTED_NOTIFICATION);
         NotificationCenter.removeObserver(this, RiderFragment.RIDER_UPDATED_NOTIFICATION);
-        navStack.close();
+        //navStack.close();
     }
 
     @Override
     public void onBackPressed() {
         Log.d(TAG + "-lifecycle", "onBackPressed");
-        if(navStack.isOnTop())
-            super.onBackPressed();
-        else
-            navStack.popNavStack();
+
+        NavController controller = Navigation.findNavController(this, R.id.nav_host);
+        if (!controller.popBackStack()) {
+            super.onBackPressed(); //OR finish();
+        }
     }
 
     @Override

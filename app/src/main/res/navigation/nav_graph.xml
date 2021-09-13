@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/appFragment">
+
+    <fragment
+        android:id="@+id/appFragment"
+        android:name="lab.infoworks.starter.ui.activities.app.AppFragment"
+        android:label="App"
+        tools:layout="@layout/fragment_app">
+        <action
+            android:id="@+id/action_appFragment_to_ridersFragment"
+            app:destination="@id/ridersFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ridersFragment"
+        android:name="lab.infoworks.starter.ui.activities.riderList.RidersFragment"
+        android:label="Riders"
+        tools:layout="@layout/fragment_riders" >
+        <action
+            android:id="@+id/action_ridersFragment_to_riderFragment"
+            app:destination="@id/riderFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/riderFragment"
+        android:name="lab.infoworks.starter.ui.activities.riderDetail.RiderFragment"
+        android:label="Rider"
+        tools:layout="@layout/fragment_rider" >
+        <action
+            android:id="@+id/action_riderFragment_to_ridersFragment"
+            app:destination="@id/ridersFragment"
+            app:popUpTo="@id/ridersFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+</navigation>
