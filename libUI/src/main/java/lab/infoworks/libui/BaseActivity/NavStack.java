@@ -54,8 +54,9 @@ public class NavStack {
 
     public void pushNavStack(Fragment fragment, String tag) {
         navStack.add(0, fragment);
-        if (tag != null && !tag.isEmpty()){
-            tagStack.add(0, tag);
+        tagStack.add(0, tag);
+        boolean isAdded = fragment.isAdded();
+        if (!isAdded){
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(fragContainerId, fragment, tag)
@@ -67,10 +68,10 @@ public class NavStack {
         }
     }
 
-
     public void popNavStack(Property...properties){
-        if (navStack.size() <= 1) return;
+        if (isOnTop()) return;
         Fragment fragment = navStack.remove(0);
+        tagStack.remove(0);
         getSupportFragmentManager()
                 .beginTransaction()
                 .remove(fragment)

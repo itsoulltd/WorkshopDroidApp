@@ -42,9 +42,7 @@ public class AppActivity extends AppCompatActivity {
         }
 
         navStack = NavStack.create(this, R.id.fragmentContainer);
-        if (savedInstanceState == null){
-            navStack.pushNavStack(getSupportFragmentManager().findFragmentByTag("AppFragment"), null);
-        }
+        navStack.pushNavStack(getSupportFragmentManager().findFragmentByTag("AppFragment"), "AppFragment");
 
         //Handling Notifications
         NotificationCenter.addObserverOnMain(this, AppFragment.MOVE_TO_RIDERS_FRAGMENT, (context, data) -> {
