@@ -53,6 +53,7 @@ public class NavStack {
     private List<String> tagStack = new ArrayList<>();
 
     public void pushNavStack(Fragment fragment, String tag) {
+        if (tag == null || tag.isEmpty()) return;
         navStack.add(0, fragment);
         tagStack.add(0, tag);
         boolean isAdded = fragment.isAdded();

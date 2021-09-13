@@ -116,10 +116,11 @@ public class AppActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-
         Log.d(TAG + "-lifecycle", "onBackPressed");
-        navStack.popNavStack();
-        //super.onBackPressed();
+        if(navStack.isOnTop())
+            super.onBackPressed();
+        else
+            navStack.popNavStack();
     }
 
     @Override
