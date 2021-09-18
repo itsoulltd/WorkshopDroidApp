@@ -21,6 +21,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
+import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.operations.EncryptedFileFetchingService;
 
@@ -93,8 +94,16 @@ public class RiderFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //
+        NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
+            //TODO:
+        });
         //Start EncryptedFileFetchingService
-        getActivity().startService(new Intent(getActivity(), EncryptedFileFetchingService.class));
+        Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
+        intent.putExtra("baseUrl", BuildConfig.api_gateway);
+        intent.putExtra("jwt-token", "---");
+        intent.putExtra("userid", 1011);
+        getActivity().startService(intent);
     }
 
     @Override
@@ -103,6 +112,12 @@ public class RiderFragment extends Fragment {
         unbinder.unbind();
         //Stop EncryptedFileFetchingService
         getActivity().stopService(new Intent(getActivity(), EncryptedFileFetchingService.class));
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        NotificationCenter.removeObserver(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE);
     }
 
     @OnClick(R.id.saveRider)

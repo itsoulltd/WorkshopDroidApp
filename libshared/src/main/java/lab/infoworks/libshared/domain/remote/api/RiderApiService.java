@@ -12,6 +12,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RiderApiService {
@@ -30,5 +31,12 @@ public interface RiderApiService {
 
     @DELETE("/rider")
     Call<Response> delete(@Query("userid") int userid);
+
+    @GET("/rider/albums/{userid}")
+    Call<List<String>> fetchAlbums(@Path("userid") Integer userid);
+
+    @GET("/rider/album/{userid}/{imagePath}")
+    Call<String> fetchAlbum(@Path("userid") Integer userid
+            , @Path("imagePath") String imagePath);
 
 }
