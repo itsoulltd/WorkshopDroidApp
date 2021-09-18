@@ -1,5 +1,6 @@
 package lab.infoworks.starter.ui.activities.riderDetail;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.util.HashMap;
@@ -19,6 +22,7 @@ import butterknife.Unbinder;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
+import lab.infoworks.starter.operations.EncryptedFileFetchingService;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,9 +91,18 @@ public class RiderFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        //Start EncryptedFileFetchingService
+        getActivity().startService(new Intent(getActivity(), EncryptedFileFetchingService.class));
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        //Stop EncryptedFileFetchingService
+        getActivity().stopService(new Intent(getActivity(), EncryptedFileFetchingService.class));
     }
 
     @OnClick(R.id.saveRider)
