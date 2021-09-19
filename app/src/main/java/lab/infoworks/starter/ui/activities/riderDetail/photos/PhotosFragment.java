@@ -20,7 +20,7 @@ public class PhotosFragment extends Fragment {
     public PhotosFragment() {
         // Required empty public constructor
     }
-    
+
     public static PhotosFragment newInstance(Integer userid) {
         PhotosFragment fragment = new PhotosFragment();
         Bundle args = new Bundle();
