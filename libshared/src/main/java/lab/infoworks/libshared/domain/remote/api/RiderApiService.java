@@ -17,7 +17,7 @@ import retrofit2.http.Query;
 public interface RiderApiService {
 
     @GET("/rider")
-    Call<List<Rider>> fetch(@Query("limit") int limit, @Query("offset") int offset);
+    Call<List<Rider>> fetch(@Query("limit") int limit, @Query("page") int page);
 
     @GET("/rider/rowCount")
     Call<ItemCount> rowCount();
