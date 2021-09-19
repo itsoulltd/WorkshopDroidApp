@@ -69,7 +69,8 @@ dependencies {
 
     //Droid client for communicating with micro-services todo
     implementation 'com.github.itsoulltd:JSQLEditor:1.1.3.3-RELEASE'
-    implementation 'com.github.itsoulltd.WebComponentKit:http-rest-client:1.10.2-RELEASE'
+    implementation 'com.github.itsoulltd.WebComponentKit:http-rest-client:1.11.5-RELEASE'
+    implementation 'com.github.itsoulltd.WebComponentKit:jjwt-web-token:v1.11.5-RELEASE'
 
     // Local unit tests
     testImplementation "junit:junit:$rootProject.junitVersion"

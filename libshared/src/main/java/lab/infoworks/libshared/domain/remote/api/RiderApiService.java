@@ -32,11 +32,10 @@ public interface RiderApiService {
     @DELETE("/rider")
     Call<Response> delete(@Query("userid") int userid);
 
-    @GET("/rider/albums/{userid}")
-    Call<List<String>> fetchAlbums(@Path("userid") Integer userid);
+    @GET("/rider/photos/{userid}")
+    Call<List<String>> fetchPhotos(@Path("userid") Integer userid);
 
-    @GET("/rider/album/{userid}/{imagePath}")
-    Call<String> fetchAlbum(@Path("userid") Integer userid
-            , @Path("imagePath") String imagePath);
+    @GET("/rider/photo/{userid}")
+    Call<String> fetchPhoto(@Path("userid") Integer userid, @Query("imagePath") String imagePath);
 
 }
