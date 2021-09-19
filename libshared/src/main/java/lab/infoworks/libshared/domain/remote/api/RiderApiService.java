@@ -3,6 +3,7 @@ package lab.infoworks.libshared.domain.remote.api;
 import com.infoworks.lab.rest.models.ItemCount;
 
 import java.util.List;
+import java.util.Map;
 
 import lab.infoworks.libshared.domain.model.Rider;
 import retrofit2.Call;
@@ -36,6 +37,6 @@ public interface RiderApiService {
     Call<List<String>> fetchPhotos(@Path("userid") Integer userid);
 
     @GET("/rider/photo/{userid}")
-    Call<String> fetchPhoto(@Path("userid") Integer userid, @Query("imagePath") String imagePath);
+    Call<Map<String,String>> fetchPhoto(@Path("userid") Integer userid, @Query("imgPath") String imagePath);
 
 }

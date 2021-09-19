@@ -3,17 +3,17 @@ package lab.infoworks.libshared.domain.repository.impl;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.infoworks.lab.cryptor.impl.AESCryptor;
 import com.it.soul.lab.data.base.DataSource;
 import com.it.soul.lab.data.base.DataStorage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import lab.infoworks.libshared.domain.datasource.RiderDataSource;
@@ -30,15 +30,14 @@ import retrofit2.Response;
 public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepository {
 
     private static final String SECRET = "my-country-man";
+    public static final String TAG = RiderRepositoryImpl.class.getSimpleName();
     private final DataSource<Integer, Rider> dataSource;
     private RiderApiService apiService;
-    private AESCryptor cryptor;
 
     public RiderRepositoryImpl(Context context, String localFirst, String baseUrl) {
         this.dataSource = new RiderDataSource(context, localFirst, baseUrl);
         //Interceptor jwtToken = new BearerTokenInterceptor(jwtToken);
         this.apiService = RemoteConfig.getInstance(baseUrl, RiderApiService.class);
-        this.cryptor = new AESCryptor();
     }
 
     public RiderApiService getApiService() {
@@ -99,16 +98,18 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
 
     @Override @RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhoto(Integer userId, String imgPath, Consumer<String> consumer) {
-        getApiService().fetchPhoto(userId, imgPath).enqueue(new Callback<String>() {
+        getApiService().fetchPhoto(userId, imgPath).enqueue(new Callback<Map<String,String>>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                String encrypted = response.body();
-                String decryptedBase64 = cryptor.decrypt(SECRET, encrypted);
+            public void onResponse(Call<Map<String,String>> call, Response<Map<String,String>> response) {
+                Map<String,String> json = response.body();
+                String encrypted = json.get("img");
+                String decryptedBase64 = ""; //cryptor.decrypt(SECRET, encrypted);
                 if(consumer != null) consumer.accept(decryptedBase64);
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<Map<String,String>> call, Throwable t) {
+                Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
                 if (consumer != null) consumer.accept(null);
             }
         });
