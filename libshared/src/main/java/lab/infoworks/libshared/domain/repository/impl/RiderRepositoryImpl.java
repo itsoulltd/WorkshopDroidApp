@@ -23,6 +23,7 @@ import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.RiderApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
+import lab.infoworks.libshared.util.crypto.Cryptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -103,7 +104,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
             public void onResponse(Call<Map<String,String>> call, Response<Map<String,String>> response) {
                 Map<String,String> json = response.body();
                 String encrypted = json.get("img");
-                String decryptedBase64 = ""; //cryptor.decrypt(SECRET, encrypted);
+                String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
                 if(consumer != null) consumer.accept(decryptedBase64);
             }
 
