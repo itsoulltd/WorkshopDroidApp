@@ -60,7 +60,7 @@ public class AESCryptor implements Cryptor{
     public String encrypt(String secret, String strToEncrypt) {
         try {
             Cipher cipher = getCipher(secret);
-            return new String(Base64.decode(cipher.doFinal(strToEncrypt.getBytes("UTF-8")), Base64.DEFAULT));
+            return new String(Base64.decode(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)), Base64.DEFAULT));
         } catch (Exception e) {
             System.out.println("Error while encrypting: " + e.toString());
         }
