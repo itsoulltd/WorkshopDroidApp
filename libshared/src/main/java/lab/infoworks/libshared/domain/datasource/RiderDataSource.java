@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi;
 
 import com.it.soul.lab.data.base.DataStorage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +28,7 @@ import retrofit2.Response;
 
 public class RiderDataSource extends CMDataSource<Integer, Rider> implements DataStorage, AutoCloseable {
 
+    public static final String TAG = RiderDataSource.class.getSimpleName();
     private AppDB db;
     private ExecutorService executor;
     private String baseUrl;
@@ -163,6 +165,38 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
         if (executor != null && !executor.isShutdown()){
             executor.shutdown();
             executor = null;
+        }
+    }
+
+    @Override
+    public Rider replace(Integer integer, Rider rider) {
+        if (sync_state_local_first){
+            //Update in memory:
+            final Rider replace = super.replace(integer, rider);
+            //Update roomBD & remoteDb
+            getExecutor().submit(() -> {
+                //roomDB
+                RiderDAO dao = db.riderDao();
+                dao.insert(replace);
+                //remoteDB
+                if (getApiService() != null){
+                    Call<Rider> updateCall = getApiService().update(replace);
+                    try {
+                        Response<Rider> response = updateCall.execute();
+                        //Example of retry: 1 time:
+                        if (!response.isSuccessful()){
+                            response = updateCall.clone().execute();
+                        }
+                        Log.d(TAG, "replace: " + response.isSuccessful());
+                    } catch (IOException e) {}
+                }
+                //
+            });
+            return replace;
+        }else {
+            //...
+            final Rider replace = super.replace(integer, rider);
+            return replace;
         }
     }
 }

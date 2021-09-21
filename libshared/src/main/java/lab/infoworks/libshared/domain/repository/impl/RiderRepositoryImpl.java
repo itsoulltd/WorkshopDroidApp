@@ -67,7 +67,6 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
     @Override
     public void update(Rider updated) {
         dataSource.replace(updated.getId(), updated);
-        ((DataStorage)dataSource).save(true);
     }
 
     @Override
