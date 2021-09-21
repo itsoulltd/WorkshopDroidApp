@@ -59,6 +59,14 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                 , 1000);
     }
 
+    @Override @RequiresApi(Build.VERSION_CODES.N)
+    public void findRiders(int page, int limit, Consumer<List<Rider>> consumer) {
+        if (consumer == null) return;
+        new Handler().post(
+                () -> dataSource.readAsync(page, limit, (riders) -> consumer.accept(Arrays.asList(riders)))
+        );
+    }
+
     @Override
     public boolean isEmpty() {
         return dataSource.size() <= 0;

@@ -16,6 +16,7 @@ public interface RiderRepository {
     }
 
     void findRiders(Consumer<List<Rider>> consumer);
+    void findRiders(int page, int limit, Consumer<List<Rider>> consumer);
     void update(Rider updated);
     boolean isEmpty();
 

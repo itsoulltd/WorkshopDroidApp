@@ -92,10 +92,8 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
                                     List<Rider> riders = response.body();
                                     if (riders != null){
                                         Log.d("RIDER-API", "Size: " + response.body().size());
-                                        int idx = items.size() - 1;
                                         for (Rider rdr : riders) {
-                                            rdr.setId(++idx);
-                                            put(idx, rdr);
+                                            put(rdr.getId(), rdr);
                                         }
                                         //Update Local-Store:
                                         save(true);
@@ -169,18 +167,18 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
     }
 
     @Override
-    public Rider replace(Integer integer, Rider rider) {
+    public Rider replace(Integer integer, Rider update) {
         if (sync_state_local_first){
             //Update in memory:
-            final Rider replace = super.replace(integer, rider);
+            Rider oldVal = super.replace(integer, update);
             //Update roomBD & remoteDb
             getExecutor().submit(() -> {
                 //roomDB
                 RiderDAO dao = db.riderDao();
-                dao.insert(replace);
+                dao.insert(update);
                 //remoteDB
                 if (getApiService() != null){
-                    Call<Rider> updateCall = getApiService().update(replace);
+                    Call<Rider> updateCall = getApiService().update(update);
                     try {
                         Response<Rider> response = updateCall.execute();
                         //Example of retry: 1 time:
@@ -192,11 +190,11 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
                 }
                 //
             });
-            return replace;
+            return oldVal;
         }else {
             //...
-            final Rider replace = super.replace(integer, rider);
-            return replace;
+            final Rider oldVal = super.replace(integer, update);
+            return oldVal;
         }
     }
 }

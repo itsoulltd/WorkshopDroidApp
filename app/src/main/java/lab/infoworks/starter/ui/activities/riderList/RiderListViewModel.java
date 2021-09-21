@@ -26,7 +26,7 @@ public class RiderListViewModel extends AndroidViewModel {
     }
 
     public void findRiders() {
-        riderRepository.findRiders((riders) -> riderLiveData.postValue(riders));
+        riderRepository.findRiders(0, 10, (riders) -> riderLiveData.postValue(riders));
     }
 
     public void update(Rider updated) {
