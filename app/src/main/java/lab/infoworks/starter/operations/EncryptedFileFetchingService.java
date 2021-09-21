@@ -1,13 +1,21 @@
 package lab.infoworks.starter.operations;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
+import lab.infoworks.libshared.domain.shared.AssetManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 
 public class EncryptedFileFetchingService extends Service {
@@ -44,15 +52,39 @@ public class EncryptedFileFetchingService extends Service {
         getPhotoRepository().fetchPhotos(userid, (imgPaths) -> {
             int length = 0;
             for (String imgPath : imgPaths) {
+                //Create User's internal Dir
+                String dirName = userid.toString();
+                try {
+                    File userDir = new File(getApplicationContext().getFilesDir(), dirName);
+                    Log.d(TAG, "onStartCommand: Created: " + (userDir.createNewFile() ? "true" : "false"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //fetch Images:
                 getPhotoRepository().fetchPhoto(userid, imgPath, (decryptedBase64) -> {
                     //TODO: Create Image From String
                     // then save into internal storage:
                     if (decryptedBase64 != null && !decryptedBase64.isEmpty()){
-                        //
+                        try {
+                            Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
+                            //Now save into internal disk:
+                            String fileName = imgPath.replace("sample/", "");
+                            FileOutputStream fileStream = getApplicationContext().openFileOutput(fileName, Context.MODE_PRIVATE);
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                            fileStream.write(baos.toByteArray());
+                            baos.close();
+                            fileStream.close();
+                            //
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 if (++length == imgPaths.size()){
-                    NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, null);
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("userDir", dirName);
+                    NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
                 }
             }
         });

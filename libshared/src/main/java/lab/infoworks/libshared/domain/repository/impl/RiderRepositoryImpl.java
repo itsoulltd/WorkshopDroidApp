@@ -115,13 +115,6 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                 Map<String,String> json = response.body();
                 String encrypted = json.get("img");
                 String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
-                try {
-                    Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
-                    //Now save into internal disk:
-                    System.out.println("");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 if(consumer != null) consumer.accept(decryptedBase64);
             }
 

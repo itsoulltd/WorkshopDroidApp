@@ -97,6 +97,8 @@ public class RiderFragment extends Fragment {
         //
         NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
             //TODO:
+            String dir = data.getStringExtra("userDir");
+            System.out.println("");
         });
         //Start EncryptedFileFetchingService
         Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
