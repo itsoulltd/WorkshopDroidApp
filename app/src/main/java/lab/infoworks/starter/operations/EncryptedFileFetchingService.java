@@ -53,8 +53,8 @@ public class EncryptedFileFetchingService extends Service {
             int length = 0;
             for (String imgPath : imgPaths) {
                 //Create User's internal Dir
-                String dirName = userid.toString();
-                final File userDir = new File(getApplicationContext().getFilesDir(), dirName);
+                String albumName = userid.toString();
+                final File userDir = new File(getApplicationContext().getFilesDir(), albumName);
                 if (!userDir.exists()) {
                     Log.d(TAG, "onStartCommand: Dir created ? " + (userDir.mkdir() ? "true" : "false"));;
                 }
@@ -80,7 +80,8 @@ public class EncryptedFileFetchingService extends Service {
                             bitmap.compress(format, 100, fos);
                             fos.flush();
                             fos.close();
-                            //
+                            //Now save meta-data into db:
+                            getPhotoRepository().addPhotoToAlbum(userid, albumName, fileName);
                         } catch (IOException e) {
                             Log.e(TAG, e.getMessage());
                         }
@@ -88,7 +89,7 @@ public class EncryptedFileFetchingService extends Service {
                 });
                 if (++length == imgPaths.size()){
                     Map<String, Object> data = new HashMap<>();
-                    data.put("userDir", dirName);
+                    data.put("albumName", albumName);
                     NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
                 }
             }

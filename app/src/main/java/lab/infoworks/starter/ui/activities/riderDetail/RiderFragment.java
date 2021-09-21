@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,8 +98,13 @@ public class RiderFragment extends Fragment {
         //
         NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
             //TODO:
-            String dir = data.getStringExtra("userDir");
-            System.out.println("");
+            String userDir = data.getStringExtra("albumName");
+            File dir = new File(getContext().getFilesDir(), userDir);
+            if (dir.isDirectory()){
+                //TODO:
+                String[] files = dir.list();
+                System.out.println("");
+            }
         });
         //Start EncryptedFileFetchingService
         Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
