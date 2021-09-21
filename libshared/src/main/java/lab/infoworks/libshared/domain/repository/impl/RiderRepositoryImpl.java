@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import lab.infoworks.libshared.util.crypto.Cryptor;
 import lab.infoworks.libshared.domain.datasource.RiderDataSource;
 import lab.infoworks.libshared.domain.datasource.SampleData;
 import lab.infoworks.libshared.domain.model.Rider;
@@ -26,7 +27,6 @@ import lab.infoworks.libshared.domain.remote.api.RiderApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
 import lab.infoworks.libshared.domain.shared.AssetManager;
-import lab.infoworks.libshared.crypto.Cryptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
