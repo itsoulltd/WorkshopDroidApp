@@ -1,6 +1,7 @@
 package lab.infoworks.libshared.domain.repository.impl;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -10,6 +11,7 @@ import androidx.annotation.RequiresApi;
 import com.it.soul.lab.data.base.DataSource;
 import com.it.soul.lab.data.base.DataStorage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +25,8 @@ import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.RiderApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
-import lab.infoworks.libshared.util.crypto.Cryptor;
+import lab.infoworks.libshared.domain.shared.AssetManager;
+import lab.infoworks.libshared.crypto.Cryptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -112,6 +115,13 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                 Map<String,String> json = response.body();
                 String encrypted = json.get("img");
                 String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
+                try {
+                    Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
+                    //Now save into internal disk:
+                    System.out.println("");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if(consumer != null) consumer.accept(decryptedBase64);
             }
 
