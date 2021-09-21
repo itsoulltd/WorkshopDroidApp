@@ -5,6 +5,7 @@ import android.app.Application;
 import java.util.List;
 import java.util.function.Consumer;
 
+import lab.infoworks.libshared.domain.model.RiderPhoto;
 import lab.infoworks.libshared.domain.repository.impl.RiderRepositoryImpl;
 
 public interface RiderPhotoRepository {
@@ -17,5 +18,6 @@ public interface RiderPhotoRepository {
     void fetchPhoto(Integer userId, String imgPath, Consumer<String> consumer);
 
     void addPhotoToAlbum(int userid, String albumName, String imgName);
+    void findBy(int userid, Consumer<List<RiderPhoto>> consumer);
 
 }

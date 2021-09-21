@@ -138,4 +138,14 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         AppDB.getExecutor().submit(() -> db.riderPhotoDao().insert(photo));
     }
 
+    @Override @RequiresApi(Build.VERSION_CODES.N)
+    public void findBy(int userid, Consumer<List<RiderPhoto>> consumer) {
+        AppDB.getExecutor().submit(() -> {
+            if (consumer != null) {
+                List<RiderPhoto> items = db.riderPhotoDao().getAll(userid);
+                consumer.accept(items);
+            }
+        });
+    }
+
 }

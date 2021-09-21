@@ -90,6 +90,7 @@ public class EncryptedFileFetchingService extends Service {
                 if (++length == imgPaths.size()){
                     Map<String, Object> data = new HashMap<>();
                     data.put("albumName", albumName);
+                    data.put("userid", userid);
                     NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
                 }
             }
