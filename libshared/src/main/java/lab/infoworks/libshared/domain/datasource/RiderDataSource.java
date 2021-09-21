@@ -11,26 +11,21 @@ import com.it.soul.lab.data.base.DataStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import lab.infoworks.libshared.domain.db.AppDB;
 import lab.infoworks.libshared.domain.db.dao.RiderDAO;
 import lab.infoworks.libshared.domain.model.Rider;
-import lab.infoworks.libshared.domain.remote.BearerTokenInterceptor;
 import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.RiderApiService;
-import okhttp3.Interceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RiderDataSource extends CMDataSource<Integer, Rider> implements DataStorage, AutoCloseable {
+public class RiderDataSource extends CMDataSource<Integer, Rider> implements DataStorage {
 
     public static final String TAG = RiderDataSource.class.getSimpleName();
     private AppDB db;
-    private ExecutorService executor;
     private String baseUrl;
     private RiderApiService apiService;
 
@@ -43,13 +38,6 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
      * -> insert/update/delete: first happen remote -> update in local -> notify UI.
      */
     private final boolean sync_state_local_first;
-
-    private ExecutorService getExecutor() {
-        if (executor == null){
-            executor = Executors.newSingleThreadExecutor();
-        }
-        return executor;
-    }
 
     private RiderApiService getApiService() {
         if (baseUrl == null || baseUrl.isEmpty()) return null;
@@ -121,7 +109,7 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
     public void save(boolean async) {
         //TODO: Save Data using Preferred Persistence Technology:
         if (async){
-            getExecutor().submit(() -> {
+            AppDB.getExecutor().submit(() -> {
                 RiderDAO dao = db.riderDao();
                 dao.insert(new ArrayList<>(getInMemoryStorage().values()));
             });
@@ -133,7 +121,7 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
     @Override
     public boolean retrieve() {
         //TODO: Retrieve Data using Preferred Persistence Technology:
-        getExecutor().submit(() -> {
+        AppDB.getExecutor().submit(() -> {
             int size = db.riderDao().rowCount();
             List<Rider> results = db.riderDao().read(size, 0);
             for (Rider rider: results) {
@@ -147,7 +135,7 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
     public boolean delete() {
         //TODO: Delete Data using Preferred Persistence Technology:
         if (sync_state_local_first){
-            getExecutor().submit(() -> {
+            AppDB.getExecutor().submit(() -> {
                 db.riderDao().deleteAll();
             });
             return true;
@@ -159,20 +147,12 @@ public class RiderDataSource extends CMDataSource<Integer, Rider> implements Dat
     }
 
     @Override
-    public void close() throws Exception {
-        if (executor != null && !executor.isShutdown()){
-            executor.shutdown();
-            executor = null;
-        }
-    }
-
-    @Override
     public Rider replace(Integer integer, Rider update) {
         if (sync_state_local_first){
             //Update in memory:
             Rider oldVal = super.replace(integer, update);
             //Update roomBD & remoteDb
-            getExecutor().submit(() -> {
+            AppDB.getExecutor().submit(() -> {
                 //roomDB
                 RiderDAO dao = db.riderDao();
                 dao.insert(update);

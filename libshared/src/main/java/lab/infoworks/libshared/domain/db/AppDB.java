@@ -6,12 +6,16 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
 import lab.infoworks.libshared.domain.db.dao.RiderDAO;
+import lab.infoworks.libshared.domain.db.dao.RiderPhotoDao;
 import lab.infoworks.libshared.domain.model.Rider;
+import lab.infoworks.libshared.domain.model.RiderPhoto;
 
-@Database(entities = {Rider.class}, version = 1)
+@Database(entities = {Rider.class, RiderPhoto.class}, version = 1)
 public abstract class AppDB extends RoomDatabase {
 
     public static final String DATABASE_NAME = "AppDatabase.db";
@@ -23,8 +27,8 @@ public abstract class AppDB extends RoomDatabase {
             REENTRANT_LOCK.lock();
             try {
                 if (instance == null){
-                    instance = Room.databaseBuilder(context.getApplicationContext(),
-                            AppDB.class, DATABASE_NAME).build();
+                    instance = Room.databaseBuilder(context.getApplicationContext(), AppDB.class, DATABASE_NAME)
+                            .build();
                 }
             }catch (Exception e){}
             finally {
@@ -36,5 +40,14 @@ public abstract class AppDB extends RoomDatabase {
 
     //Declare DAO abstract methods:
     public abstract RiderDAO riderDao();
+    public abstract RiderPhotoDao riderPhotoDao();
+
+    private static ExecutorService executor;
+    public static ExecutorService getExecutor() {
+        if (executor == null){
+            executor = Executors.newSingleThreadExecutor();
+        }
+        return executor;
+    }
 
 }

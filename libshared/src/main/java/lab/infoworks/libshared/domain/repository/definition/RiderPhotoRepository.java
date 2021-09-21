@@ -16,4 +16,6 @@ public interface RiderPhotoRepository {
     void fetchPhotos(Integer userId, Consumer<List<String>> consumer);
     void fetchPhoto(Integer userId, String imgPath, Consumer<String> consumer);
 
+    void addPhotoToAlbum(int userid, String albumName, String imgName);
+
 }

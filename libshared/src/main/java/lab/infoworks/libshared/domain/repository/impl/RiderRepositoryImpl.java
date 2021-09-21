@@ -1,7 +1,6 @@
 package lab.infoworks.libshared.domain.repository.impl;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -11,22 +10,22 @@ import androidx.annotation.RequiresApi;
 import com.it.soul.lab.data.base.DataSource;
 import com.it.soul.lab.data.base.DataStorage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import lab.infoworks.libshared.util.crypto.Cryptor;
 import lab.infoworks.libshared.domain.datasource.RiderDataSource;
 import lab.infoworks.libshared.domain.datasource.SampleData;
+import lab.infoworks.libshared.domain.db.AppDB;
 import lab.infoworks.libshared.domain.model.Rider;
+import lab.infoworks.libshared.domain.model.RiderPhoto;
 import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.RiderApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
-import lab.infoworks.libshared.domain.shared.AssetManager;
+import lab.infoworks.libshared.util.crypto.Cryptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,8 +36,10 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
     public static final String TAG = RiderRepositoryImpl.class.getSimpleName();
     private final DataSource<Integer, Rider> dataSource;
     private RiderApiService apiService;
+    private AppDB db;
 
     public RiderRepositoryImpl(Context context, String localFirst, String baseUrl) {
+        this.db = AppDB.getInstance(context);
         this.dataSource = new RiderDataSource(context, localFirst, baseUrl);
         //Interceptor jwtToken = new BearerTokenInterceptor(jwtToken);
         this.apiService = RemoteConfig.getInstance(baseUrl, RiderApiService.class);
@@ -125,4 +126,16 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
             }
         });
     }
+
+    @Override
+    public void addPhotoToAlbum(int userid, String albumName, String imgName) {
+        //Insert into RoomDB:
+        RiderPhoto photo = new RiderPhoto();
+        photo.setUserid(userid);
+        photo.setAlbumName(albumName);
+        photo.setImageName(imgName);
+        //
+        AppDB.getExecutor().submit(() -> db.riderPhotoDao().insert(photo));
+    }
+
 }
