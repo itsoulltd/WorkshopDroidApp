@@ -54,30 +54,35 @@ public class EncryptedFileFetchingService extends Service {
             for (String imgPath : imgPaths) {
                 //Create User's internal Dir
                 String dirName = userid.toString();
-                try {
-                    File userDir = new File(getApplicationContext().getFilesDir(), dirName);
-                    Log.d(TAG, "onStartCommand: Created: " + (userDir.createNewFile() ? "true" : "false"));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                final File userDir = new File(getApplicationContext().getFilesDir(), dirName);
+                if (!userDir.exists()) {
+                    Log.d(TAG, "onStartCommand: Dir created ? " + (userDir.mkdir() ? "true" : "false"));;
                 }
                 //fetch Images:
                 getPhotoRepository().fetchPhoto(userid, imgPath, (decryptedBase64) -> {
-                    //TODO: Create Image From String
-                    // then save into internal storage:
+                    //Create Image From String
+                    //then save into internal storage:
                     if (decryptedBase64 != null && !decryptedBase64.isEmpty()){
                         try {
                             Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
-                            //Now save into internal disk:
                             String fileName = imgPath.replace("sample/", "");
-                            FileOutputStream fileStream = getApplicationContext().openFileOutput(fileName, Context.MODE_PRIVATE);
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                            fileStream.write(baos.toByteArray());
-                            baos.close();
-                            fileStream.close();
+                            //Now save into internal disk:
+                            File imgFile = new File(userDir, fileName);
+                            if (imgFile.exists()){
+                                //IF-EXIST-DELETE
+                                Log.d(TAG, "onStartCommand: File Deleted when Exist:"
+                                        + (imgFile.delete() ? "true" : "false"));
+                            }
+                            FileOutputStream fos = new FileOutputStream(imgFile);
+                            Bitmap.CompressFormat format = (fileName.toLowerCase().contains("png"))
+                                    ? Bitmap.CompressFormat.PNG
+                                    : Bitmap.CompressFormat.JPEG;
+                            bitmap.compress(format, 100, fos);
+                            fos.flush();
+                            fos.close();
                             //
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.getMessage());
                         }
                     }
                 });
