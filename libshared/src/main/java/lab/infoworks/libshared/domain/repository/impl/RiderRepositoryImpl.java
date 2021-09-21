@@ -135,7 +135,10 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         photo.setAlbumName(albumName);
         photo.setImageName(imgName);
         //
-        AppDB.getExecutor().submit(() -> db.riderPhotoDao().insert(photo));
+        AppDB.getExecutor().submit(() -> {
+            if(db.riderPhotoDao().getPhotoByName(imgName) == null)
+                db.riderPhotoDao().insert(photo);
+        });
     }
 
     @Override @RequiresApi(Build.VERSION_CODES.N)

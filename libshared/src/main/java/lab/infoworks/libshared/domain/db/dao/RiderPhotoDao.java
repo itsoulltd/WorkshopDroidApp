@@ -22,4 +22,7 @@ public interface RiderPhotoDao {
     @Query("SELECT * FROM rider_photo WHERE userid = :userid")
     List<RiderPhoto> getAll(int userid);
 
+    @Query("SELECT * FROM rider_photo WHERE image_name = :imageName")
+    RiderPhoto getPhotoByName(String imageName);
+
 }
