@@ -50,11 +50,11 @@ public abstract class AppDB extends RoomDatabase {
         return executor;
     }
     public void close() {
-        super.close();
         if (executor != null && !executor.isShutdown()){
             executor.shutdown();
             executor = null;
         }
+        super.close();
     }
 
 }
