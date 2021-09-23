@@ -1,7 +1,10 @@
 package lab.infoworks.libshared.domain.model;
 
+import android.graphics.Bitmap;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "rider_photo", ignoredColumns = {"status", "error", "message", "payload", "event", "classType", "_isAutoIncremented"})
@@ -21,6 +24,9 @@ public class RiderPhoto extends ResponseExt{
     private String albumName;
     @ColumnInfo(name = "image_name")
     private String imageName;
+
+    @Ignore
+    private Bitmap photo;
 
     public RiderPhoto() {}
 
@@ -54,5 +60,13 @@ public class RiderPhoto extends ResponseExt{
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    public Bitmap getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Bitmap photo) {
+        this.photo = photo;
     }
 }

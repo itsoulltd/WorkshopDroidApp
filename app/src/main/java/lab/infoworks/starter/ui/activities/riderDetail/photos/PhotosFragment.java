@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
@@ -29,7 +31,8 @@ import lab.infoworks.starter.ui.activities.riderDetail.RiderDetailViewModel;
 public class PhotosFragment extends Fragment {
 
     private Unbinder unbinder;
-    //@BindView(R.id.riderPhotosRecycler)
+
+    @BindView(R.id.riderPhotosRecycler)
     RecyclerView riderPhotosRecycler;
     PhotosAdapter riderPhotosAdapter;
 
@@ -57,7 +60,7 @@ public class PhotosFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_photos, container, false);
+        View view = inflater.inflate(R.layout.fragment_photos_recycler, container, false);
         unbinder = ButterKnife.bind(this, view);
         if (getArguments() != null) {
             //TODO:
@@ -81,8 +84,13 @@ public class PhotosFragment extends Fragment {
             int userid = Integer.valueOf(data.getStringExtra("userid"));
             ViewModelProviders.of(this).get(RiderDetailViewModel.class)
                     .getPhotos().observe(getViewLifecycleOwner(), (riderPhotos) -> {
-                //TODO:
-                System.out.println();
+                //TODO:Read Bitmap from disk assign to Photo.photo
+                //
+                PhotosAdapter adapter = new PhotosAdapter(riderPhotos);
+                riderPhotosRecycler.setAdapter(adapter);
+                riderPhotosAdapter = adapter;
+                riderPhotosRecycler.setLayoutManager(new GridLayoutManager(getActivity(), 2, LinearLayoutManager.HORIZONTAL, false));
+                //
             });
             ViewModelProviders.of(this).get(RiderDetailViewModel.class)
                     .findPhotosBy(userid);

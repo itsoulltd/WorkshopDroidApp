@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.Comparator;
 import java.util.List;
 
 import lab.infoworks.libshared.domain.model.Rider;
@@ -44,7 +43,7 @@ public class RiderAdapter extends RecyclerView.Adapter<RiderCellViewHolder>{
         return (riders != null) ? riders.size() : 0;
     }
 
-    public void notifyItemChanged(Rider updated, Comparator<Rider> comparator) {
+    /*public void notifyItemChanged(Rider updated, Comparator<Rider> comparator) {
         //TODO:
         if (comparator == null || updated == null) return;
         int index = 0;
@@ -56,6 +55,6 @@ public class RiderAdapter extends RecyclerView.Adapter<RiderCellViewHolder>{
         Rider old = riders.get(index);
         old.unmarshallingFromMap(updated.marshallingToMap(true), true);
         notifyItemChanged(index);
-    }
+    }*/
 
 }
