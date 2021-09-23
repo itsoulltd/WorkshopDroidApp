@@ -14,10 +14,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import lab.infoworks.libshared.domain.model.RiderPhoto;
+import lab.infoworks.libshared.domain.shared.AssetManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.operations.EncryptedFileFetchingService;
@@ -73,18 +79,25 @@ public class PhotosFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         //
         NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
-            //TODO:
+            //
             String userDir = data.getStringExtra("albumName");
-            File dir = new File(getContext().getFilesDir(), userDir);
-            if (dir.isDirectory()){
-                //TODO:
-                String[] files = dir.list();
-                System.out.println("");
-            }
             int userid = Integer.valueOf(data.getStringExtra("userid"));
             ViewModelProviders.of(this).get(RiderDetailViewModel.class)
                     .getPhotos().observe(getViewLifecycleOwner(), (riderPhotos) -> {
                 //TODO:Read Bitmap from disk assign to Photo.photo
+                File dir = new File(getContext().getFilesDir(), userDir);
+                for (RiderPhoto photo : riderPhotos) {
+                    File imgFile = new File(dir, photo.getImageName());
+                    if (imgFile.exists()){
+                        try {
+                            FileInputStream fos = new FileInputStream(imgFile);
+                            photo.setPhoto(AssetManager.readAsImage(fos, 0));
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
                 //
                 PhotosAdapter adapter = new PhotosAdapter(riderPhotos);
                 riderPhotosRecycler.setAdapter(adapter);
