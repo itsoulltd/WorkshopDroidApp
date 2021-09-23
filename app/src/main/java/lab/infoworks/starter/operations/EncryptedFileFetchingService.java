@@ -54,7 +54,8 @@ public class EncryptedFileFetchingService extends Service {
             for (String imgPath : imgPaths) {
                 //Create User's internal Dir
                 String albumName = userid.toString();
-                final File userDir = new File(getApplicationContext().getFilesDir(), albumName);
+                File internalFilesDir = getApplicationContext().getFilesDir();
+                final File userDir = new File(internalFilesDir, albumName);
                 if (!userDir.exists()) {
                     Log.d(TAG, "onStartCommand: Dir created ? " + (userDir.mkdir() ? "true" : "false"));;
                 }
