@@ -11,8 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +25,7 @@ import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.operations.EncryptedFileFetchingService;
+import lab.infoworks.starter.ui.activities.riderDetail.photos.PhotosFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -92,26 +93,25 @@ public class RiderFragment extends Fragment {
         return view;
     }
 
+    // This event is triggered soon after onCreateView().
+    // onViewCreated() is only called if the view returned from onCreateView() is non-null.
+    // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        //
-        NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
-            //TODO:
-            String userDir = data.getStringExtra("albumName");
-            File dir = new File(getContext().getFilesDir(), userDir);
-            if (dir.isDirectory()){
-                //TODO:
-                String[] files = dir.list();
-                System.out.println("");
-            }
-        });
+        addNestedFragment();
         //Start EncryptedFileFetchingService
         Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
         intent.putExtra("baseUrl", BuildConfig.api_gateway);
         intent.putExtra("jwt-token", "---");
         intent.putExtra("userid", 1011);
         getActivity().startService(intent);
+    }
+
+    private void addNestedFragment() {
+        Fragment photosFragment = new PhotosFragment();
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.riderPhotosFragmentContainer, photosFragment).commit();
     }
 
     @Override
@@ -125,7 +125,6 @@ public class RiderFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        NotificationCenter.removeObserver(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE);
     }
 
     @OnClick(R.id.saveRider)

@@ -1,14 +1,25 @@
 package lab.infoworks.starter.ui.activities.riderDetail.photos;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.io.File;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
+import lab.infoworks.starter.operations.EncryptedFileFetchingService;
+import lab.infoworks.starter.ui.activities.riderDetail.RiderDetailViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -16,6 +27,11 @@ import lab.infoworks.starter.R;
  * create an instance of this fragment.
  */
 public class PhotosFragment extends Fragment {
+
+    private Unbinder unbinder;
+    //@BindView(R.id.riderPhotosRecycler)
+    RecyclerView riderPhotosRecycler;
+    PhotosAdapter riderPhotosAdapter;
 
     public PhotosFragment() {
         // Required empty public constructor
@@ -41,6 +57,47 @@ public class PhotosFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_photos, container, false);
+        View view = inflater.inflate(R.layout.fragment_photos, container, false);
+        unbinder = ButterKnife.bind(this, view);
+        if (getArguments() != null) {
+            //TODO:
+        }
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        //
+        NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
+            //TODO:
+            String userDir = data.getStringExtra("albumName");
+            File dir = new File(getContext().getFilesDir(), userDir);
+            if (dir.isDirectory()){
+                //TODO:
+                String[] files = dir.list();
+                System.out.println("");
+            }
+            int userid = Integer.valueOf(data.getStringExtra("userid"));
+            ViewModelProviders.of(this).get(RiderDetailViewModel.class)
+                    .getPhotos().observe(getViewLifecycleOwner(), (riderPhotos) -> {
+                //TODO:
+                System.out.println();
+            });
+            ViewModelProviders.of(this).get(RiderDetailViewModel.class)
+                    .findPhotosBy(userid);
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        NotificationCenter.removeObserver(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE);
     }
 }
