@@ -33,10 +33,4 @@ public interface RiderApiService {
     @DELETE("/rider")
     Call<Response> delete(@Query("userid") int userid);
 
-    @GET("/rider/photos/{userid}")
-    Call<List<String>> fetchPhotos(@Path("userid") Integer userid);
-
-    @GET("/rider/photo/{userid}")
-    Call<Map<String,String>> fetchPhoto(@Path("userid") Integer userid, @Query("imgPath") String imagePath);
-
 }

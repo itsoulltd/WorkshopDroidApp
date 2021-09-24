@@ -22,7 +22,7 @@ import lab.infoworks.libshared.domain.db.AppDB;
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.domain.model.RiderPhoto;
 import lab.infoworks.libshared.domain.remote.RemoteConfig;
-import lab.infoworks.libshared.domain.remote.api.RiderApiService;
+import lab.infoworks.libshared.domain.remote.api.RiderPhotoApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
 import lab.infoworks.libshared.util.crypto.Cryptor;
@@ -35,17 +35,17 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
     private static final String SECRET = "my-country-man";
     public static final String TAG = RiderRepositoryImpl.class.getSimpleName();
     private final DataSource<Integer, Rider> dataSource;
-    private RiderApiService apiService;
+    private RiderPhotoApiService apiService;
     private AppDB db;
 
     public RiderRepositoryImpl(Context context, String localFirst, String baseUrl) {
         this.db = AppDB.getInstance(context);
         this.dataSource = new RiderDataSource(context, localFirst, baseUrl);
         //Interceptor jwtToken = new BearerTokenInterceptor(jwtToken);
-        this.apiService = RemoteConfig.getInstance(baseUrl, RiderApiService.class);
+        this.apiService = RemoteConfig.getInstance(baseUrl, RiderPhotoApiService.class);
     }
 
-    public RiderApiService getApiService() {
+    public RiderPhotoApiService getPhotoApiService() {
         return apiService;
     }
 
@@ -93,7 +93,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
 
     @Override @RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhotos(Integer userId, Consumer<List<String>> consumer) {
-        getApiService().fetchPhotos(userId)
+        getPhotoApiService().fetchPhotos(userId)
                 .enqueue(new Callback<List<String>>() {
                     @Override
                     public void onResponse(Call<List<String>> call, Response<List<String>> response) {
@@ -110,7 +110,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
 
     @Override @RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhoto(Integer userId, String imgPath, Consumer<String> consumer) {
-        getApiService().fetchPhoto(userId, imgPath).enqueue(new Callback<Map<String,String>>() {
+        getPhotoApiService().fetchPhoto(userId, imgPath).enqueue(new Callback<Map<String,String>>() {
             @Override
             public void onResponse(Call<Map<String,String>> call, Response<Map<String,String>> response) {
                 Map<String,String> json = response.body();
