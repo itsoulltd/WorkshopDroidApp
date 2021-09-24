@@ -14,16 +14,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import lab.infoworks.libshared.domain.model.RiderPhoto;
-import lab.infoworks.libshared.domain.shared.AssetManager;
+import lab.infoworks.libshared.domain.shared.FileManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.operations.EncryptedFileFetchingService;
@@ -80,14 +77,14 @@ public class PhotosFragment extends Fragment {
         //
         NotificationCenter.addObserverOnMain(getActivity(), EncryptedFileFetchingService.ENCRYPTED_SERVICE_COMPLETE, (intent, data) -> {
             //
-            String userDir = data.getStringExtra("albumName");
-            int userid = Integer.valueOf(data.getStringExtra("userid"));
+            String albumName = data.getStringExtra("albumName");
             ViewModelProviders.of(this).get(RiderDetailViewModel.class)
                     .getPhotos().observe(getViewLifecycleOwner(), (riderPhotos) -> {
-                //TODO:Read Bitmap from disk assign to Photo.photo
-                File dir = new File(getContext().getFilesDir(), userDir);
+                //Read Bitmap from disk assign to Photo.photo
+                File albumDir = new File(getContext().getFilesDir(), albumName);
+                FileManager fileManager = new FileManager(getContext());
                 for (RiderPhoto photo : riderPhotos) {
-                    File imgFile = new File(dir, photo.getImageName());
+                    /*File imgFile = new File(dir, photo.getImageName());
                     if (imgFile.exists()){
                         try {
                             FileInputStream fos = new FileInputStream(imgFile);
@@ -96,6 +93,11 @@ public class PhotosFragment extends Fragment {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    }*/
+                    try {
+                        photo.setPhoto(fileManager.readBitmap(albumDir, photo.getImageName()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
                 //
@@ -105,7 +107,10 @@ public class PhotosFragment extends Fragment {
                 riderPhotosRecycler.setLayoutManager(new GridLayoutManager(getActivity(), 2, LinearLayoutManager.HORIZONTAL, false));
                 //
             });
-            ViewModelProviders.of(this).get(RiderDetailViewModel.class)
+            //
+            int userid = Integer.valueOf(data.getStringExtra("userid"));
+            ViewModelProviders.of(this)
+                    .get(RiderDetailViewModel.class)
                     .findPhotosBy(userid);
         });
     }

@@ -1,21 +1,19 @@
 package lab.infoworks.starter.operations;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.shared.AssetManager;
+import lab.infoworks.libshared.domain.shared.FileManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 
 public class EncryptedFileFetchingService extends Service {
@@ -54,11 +52,13 @@ public class EncryptedFileFetchingService extends Service {
             for (String imgPath : imgPaths) {
                 //Create User's internal Dir
                 String albumName = userid.toString();
-                File internalFilesDir = getApplicationContext().getFilesDir();
+                FileManager fileManager = new FileManager(getApplication());
+                /*File internalFilesDir = getApplicationContext().getFilesDir();
                 final File userDir = new File(internalFilesDir, albumName);
                 if (!userDir.exists()) {
                     Log.d(TAG, "onStartCommand: Dir created ? " + (userDir.mkdir() ? "true" : "false"));;
-                }
+                }*/
+                File albumDir = fileManager.createFolder(albumName);
                 //fetch Images:
                 getPhotoRepository().fetchPhoto(userid, imgPath, (decryptedBase64) -> {
                     //Create Image From String
@@ -68,19 +68,21 @@ public class EncryptedFileFetchingService extends Service {
                             Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
                             String fileName = imgPath.replace("sample/", "");
                             //Now save into internal disk:
-                            File imgFile = new File(userDir, fileName);
+                            /*File imgFile = new File(albumDir, fileName);
                             if (imgFile.exists()){
                                 //IF-EXIST-DELETE
                                 Log.d(TAG, "onStartCommand: File Deleted when Exist:"
                                         + (imgFile.delete() ? "true" : "false"));
-                            }
+                            }*/
+                            /*File imgFile = fileManager.getFile(albumDir, fileName, true);
                             FileOutputStream fos = new FileOutputStream(imgFile);
                             Bitmap.CompressFormat format = (fileName.toLowerCase().contains("png"))
                                     ? Bitmap.CompressFormat.PNG
                                     : Bitmap.CompressFormat.JPEG;
                             bitmap.compress(format, 100, fos);
                             fos.flush();
-                            fos.close();
+                            fos.close();*/
+                            fileManager.saveBitmap(bitmap, albumDir, fileName, 100);
                             //Now save meta-data into db:
                             getPhotoRepository().addPhotoToAlbum(userid, albumName, fileName);
                         } catch (IOException e) {
