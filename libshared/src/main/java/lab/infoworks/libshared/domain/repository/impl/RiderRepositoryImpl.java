@@ -1,11 +1,8 @@
 package lab.infoworks.libshared.domain.repository.impl;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
-
-import androidx.annotation.RequiresApi;
 
 import com.it.soul.lab.data.base.DataSource;
 import com.it.soul.lab.data.base.DataStorage;
@@ -49,7 +46,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         return apiService;
     }
 
-    @Override @RequiresApi(Build.VERSION_CODES.N)
+    @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void findRiders(Consumer<List<Rider>> consumer) {
         if (consumer == null) return;
         final int maxItem = dataSource.size();
@@ -63,7 +60,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                 , 1000);
     }
 
-    @Override @RequiresApi(Build.VERSION_CODES.N)
+    @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void findRiders(int page, int limit, Consumer<List<Rider>> consumer) {
         if (consumer == null) return;
         new Handler().post(
@@ -91,7 +88,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         ((DataStorage)dataSource).save(true);
     }
 
-    @Override @RequiresApi(Build.VERSION_CODES.N)
+    @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhotos(Integer userId, Consumer<List<String>> consumer) {
         getPhotoApiService().fetchPhotos(userId)
                 .enqueue(new Callback<List<String>>() {
@@ -108,7 +105,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                 });
     }
 
-    @Override @RequiresApi(Build.VERSION_CODES.N)
+    @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhoto(Integer userId, String imgPath, Consumer<String> consumer) {
         getPhotoApiService().fetchPhoto(userId, imgPath).enqueue(new Callback<Map<String,String>>() {
             @Override
@@ -141,7 +138,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         });
     }
 
-    @Override @RequiresApi(Build.VERSION_CODES.N)
+    @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void findBy(int userid, Consumer<List<RiderPhoto>> consumer) {
         AppDB.getExecutor().submit(() -> {
             if (consumer != null) {
