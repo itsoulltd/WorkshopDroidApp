@@ -102,7 +102,7 @@ public class FileManager implements AutoCloseable{
         return null;
     }
 
-    //@RequiresApi(api = Build.VERSION_CODES.N)
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void readBitmap(File folder, String fileName, Consumer<Bitmap> consumer) {
         getExecutor().submit(() -> {
             try {
