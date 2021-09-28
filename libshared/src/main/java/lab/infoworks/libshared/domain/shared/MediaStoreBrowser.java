@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MediaStoreBrowser {
 
-    public static class Builder implements MediaStoreFromUri, MediaStoreSelect, MediaStoreSearch, MediaStoreWhere, MediaStoreOrderBy{
+    public static class Builder implements MediaStoreFromUri, MediaStoreSelect, MediaStoreFetch, MediaStoreWhere, MediaStoreOrderBy{
 
         private Type type;
         private Class<?> mediaClsType;
@@ -73,21 +73,21 @@ public class MediaStoreBrowser {
         }
 
         @Override
-        public MediaStoreSearch orderBy(Order order, String column) {
+        public MediaStoreFetch orderBy(Order order, String column) {
             this.order = order;
             this.orderColumn = column;
             return this;
         }
 
         @Override
-        public MediaStoreSearch orderBy(String column) {
+        public MediaStoreFetch orderBy(String column) {
             this.order = Order.ASC;
             this.orderColumn = column;
             return this;
         }
 
         @Override
-        public <T extends MediaStoreItem> List<T> search(MediaStoreItemMapper<T> mapper) {
+        public <T extends MediaStoreItem> List<T> fetch(MediaStoreItemMapper<T> mapper) {
             AtomicInteger incrementer = new AtomicInteger(0);
             List<T> items = new ArrayList<>();
             try(Cursor cursor = appContext.getContentResolver().query(
@@ -157,13 +157,13 @@ public class MediaStoreBrowser {
         MediaStoreOrderBy where(Predicate predicate);
     }
 
-    public interface MediaStoreOrderBy extends MediaStoreSearch{
-        MediaStoreSearch orderBy(Order order, String column);
-        MediaStoreSearch orderBy(String column);
+    public interface MediaStoreOrderBy extends MediaStoreFetch {
+        MediaStoreFetch orderBy(Order order, String column);
+        MediaStoreFetch orderBy(String column);
     }
 
-    public interface MediaStoreSearch {
-        <T extends MediaStoreItem> List<T> search(MediaStoreItemMapper<T> mapper);
+    public interface MediaStoreFetch {
+        <T extends MediaStoreItem> List<T> fetch(MediaStoreItemMapper<T> mapper);
     }
 
     public static class MediaStoreItem extends Entity {

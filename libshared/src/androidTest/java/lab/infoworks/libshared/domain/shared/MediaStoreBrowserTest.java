@@ -39,7 +39,7 @@ public class MediaStoreBrowserTest {
                         , MediaStore.Video.Media.ALBUM_ARTIST)
                 .where(predicate)
                 .orderBy(MediaStore.Video.Media.DISPLAY_NAME)
-                .search((cursor, index) -> {
+                .fetch((cursor, index) -> {
                     //TODO:
                     return null;
                 });
