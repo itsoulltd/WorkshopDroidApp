@@ -25,9 +25,9 @@ public class MediaStoreBrowser {
         private Context appContext;
 
         public Builder(Context application) {
-            this.appContext = (appContext instanceof Application)
+            this.appContext = (application instanceof Application)
                     ? application.getApplicationContext()
-                    : appContext;
+                    : application;
         }
 
         private Uri from;
@@ -106,9 +106,16 @@ public class MediaStoreBrowser {
         }
 
         private String[] getSelectionsArgs() {
-            //TODO:
             if (predicate != null){
-                //
+                Expression[] expressions = predicate.resolveExpressions();
+                if (expressions != null && expressions.length > 0){
+                    List<String> exps = new ArrayList<>();
+                    for (Expression exp : expressions) {
+                        if (exp.getValueProperty().getValue() == null) continue;
+                        exps.add(exp.getValueProperty().getValue().toString());
+                    }
+                    return exps.toArray(new String[0]);
+                }
             }
             return new String[0];
         }
@@ -117,7 +124,9 @@ public class MediaStoreBrowser {
             if (predicate != null){
                 Expression[] expressions = predicate.resolveExpressions();
                 if (expressions != null && expressions.length > 0){
-                    String pro = expressions[0].getProperty();
+                    Expression expression = expressions[0];
+                    String pro = expression.getProperty().replaceAll(" ", "");
+                    pro = pro + " " + expression.getType().toString() + " ";
                     return pro;
                 }
             }
