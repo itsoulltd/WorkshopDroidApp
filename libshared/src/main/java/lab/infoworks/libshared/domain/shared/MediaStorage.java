@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MediaStorage {
 
-    public static class Builder implements MediaStoreFromUri, MediaStoreSelect, MediaStoreFetch, MediaStoreWhere, MediaStoreOrderBy{
+    public static class Builder implements FromUri, Select, Fetch, Where, OrderBy {
 
         private Type type;
         private Class<?> mediaClsType;
@@ -37,7 +37,7 @@ public class MediaStorage {
         private String orderColumn;
 
         @Override
-        public MediaStoreSelect from(Type type) {
+        public Select from(Type type) {
             this.type = type;
             if (type == Type.Video){
                 mediaClsType = MediaStore.Video.class;
@@ -61,26 +61,26 @@ public class MediaStorage {
         }
 
         @Override
-        public MediaStoreWhere select(String... projections) {
+        public Where select(String... projections) {
             this.projection = projections;
             return this;
         }
 
         @Override
-        public MediaStoreOrderBy where(Predicate predicate) {
+        public OrderBy where(Predicate predicate) {
             this.predicate = predicate;
             return this;
         }
 
         @Override
-        public MediaStoreFetch orderBy(Order order, String column) {
+        public Fetch orderBy(Order order, String column) {
             this.order = order;
             this.orderColumn = column;
             return this;
         }
 
         @Override
-        public MediaStoreFetch orderBy(String column) {
+        public Fetch orderBy(String column) {
             this.order = Order.ASC;
             this.orderColumn = column;
             return this;
@@ -145,24 +145,24 @@ public class MediaStorage {
     public enum Order {ASC, DESC}
     public enum Type {Video, Audio, Image, File, Download}
 
-    public interface MediaStoreFromUri extends MediaStoreSelect{
-        MediaStoreSelect from(Type type);
+    public interface FromUri extends Select {
+        Select from(Type type);
     }
 
-    public interface MediaStoreSelect extends MediaStoreWhere{
-        MediaStoreWhere select(String...projections);
+    public interface Select extends Where {
+        Where select(String...projections);
     }
 
-    public interface MediaStoreWhere extends MediaStoreOrderBy{
-        MediaStoreOrderBy where(Predicate predicate);
+    public interface Where extends OrderBy {
+        OrderBy where(Predicate predicate);
     }
 
-    public interface MediaStoreOrderBy extends MediaStoreFetch {
-        MediaStoreFetch orderBy(Order order, String column);
-        MediaStoreFetch orderBy(String column);
+    public interface OrderBy extends Fetch {
+        Fetch orderBy(Order order, String column);
+        Fetch orderBy(String column);
     }
 
-    public interface MediaStoreFetch {
+    public interface Fetch {
         <T extends MediaStoreItem> List<T> fetch(MediaStoreItemMapper<T> mapper);
     }
 
