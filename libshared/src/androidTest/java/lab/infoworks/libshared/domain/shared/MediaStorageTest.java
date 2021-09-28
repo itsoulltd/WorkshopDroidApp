@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
-public class MediaStoreBrowserTest {
+public class MediaStorageTest {
 
     private Context appContext;
 
@@ -97,8 +97,8 @@ public class MediaStoreBrowserTest {
         Predicate predicate = new Where(MediaStore.Video.Media.DURATION)
                 .isGreaterThenOrEqual(durationIs);
         //Fetch the query:
-        List<MediaStoreBrowser.MediaStoreItem> items = new MediaStoreBrowser.Builder(appContext)
-                .from(MediaStoreBrowser.Type.Video)
+        List<MediaStorage.MediaStoreItem> items = new MediaStorage.Builder(appContext)
+                .from(MediaStorage.Type.Video)
                 .select(MediaStore.Video.Media._ID,
                         MediaStore.Video.Media.DISPLAY_NAME,
                         MediaStore.Video.Media.DURATION,
@@ -129,7 +129,7 @@ public class MediaStoreBrowserTest {
         //...
     }
 
-    private class Video extends MediaStoreBrowser.MediaStoreItem {
+    private class Video extends MediaStorage.MediaStoreItem {
 
         private final Uri uri;
         private final String name;
@@ -137,7 +137,7 @@ public class MediaStoreBrowserTest {
         private final int size;
 
         public Video(Uri uri, String name, int duration, int size) {
-            super(MediaStoreBrowser.Type.Video, uri, name, duration, size);
+            super(MediaStorage.Type.Video, uri, name, duration, size);
             this.uri = uri;
             this.name = name;
             this.duration = duration;

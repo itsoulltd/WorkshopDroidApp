@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MediaStoreBrowser {
+public class MediaStorage {
 
     public static class Builder implements MediaStoreFromUri, MediaStoreSelect, MediaStoreFetch, MediaStoreWhere, MediaStoreOrderBy{
 
