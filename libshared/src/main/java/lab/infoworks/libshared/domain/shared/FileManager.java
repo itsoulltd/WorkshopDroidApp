@@ -1,9 +1,13 @@
 package lab.infoworks.libshared.domain.shared;
 
 import android.app.Application;
+import android.app.usage.StorageStatsManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Environment;
+import android.os.storage.StorageManager;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -11,11 +15,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class FileManager implements AutoCloseable{
+
+    public static final String LOG_TAG = FileManager.class.getSimpleName();
 
     @Override
     public void close() throws Exception {
@@ -55,16 +62,39 @@ public class FileManager implements AutoCloseable{
         this.mode = mode;
     }
 
+    /**
+     *
+     * @param folderName
+     * @return
+     */
     public File createFolder(String folderName) {
         if (mode == StorageMode.INTERNAL){
             File root = getAppContext().getFilesDir();
             final File folder = new File(root, folderName);
-            boolean isCreated = !folder.exists() ? folder.mkdir() : false;
+            if (folder == null || !folder.mkdirs()) {
+                Log.e(LOG_TAG, "Directory not created");
+            }
             return folder;
         } else {
-            //TODO: Not implemented:
-            return null;
+            return (isExternalStorageWritable())
+                    ? createAppSpecificExternalFolder(folderName, Environment.DIRECTORY_DOCUMENTS)
+                    : null;
         }
+    }
+
+    /**
+     *
+     * @param folderName
+     * @param environmentDirectory e.g. Environment.DIRECTORY_PICTURES, Environment.DIRECTORY_DOCUMENTS etc
+     * @return
+     */
+    public File createAppSpecificExternalFolder(String folderName, String environmentDirectory) {
+        if (!isExternalStorageWritable()) return null;
+        File file = new File(getAppContext().getExternalFilesDir(environmentDirectory), folderName);
+        if (file == null || !file.mkdirs()) {
+            Log.e(LOG_TAG, "Directory not created");
+        }
+        return file;
     }
 
     public File getFile(File folder, String fileName, boolean removeIfExist){
@@ -88,7 +118,7 @@ public class FileManager implements AutoCloseable{
         getExecutor().submit(() -> {
             try {
                 saveBitmap(bitmap, folder, fileName, quality);
-            } catch (IOException e) { e.printStackTrace(); }
+            } catch (IOException e) { Log.d(LOG_TAG, "availableBytes: " + e.getMessage()); }
         });
     }
 
@@ -110,8 +140,40 @@ public class FileManager implements AutoCloseable{
                     Bitmap bitmap = readBitmap(folder, fileName);
                     consumer.accept(bitmap);
                 }
-            }catch (IOException e) {e.printStackTrace();}
+            }catch (IOException e) {Log.d(LOG_TAG, "availableBytes: " + e.getMessage());}
         });
+    }
+
+    public long availableBytes() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            StorageManager storageManager = getAppContext().getSystemService(StorageManager.class);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                StorageStatsManager stManager = getAppContext().getSystemService(StorageStatsManager.class);
+                if (mode == StorageMode.INTERNAL) {
+                    try {
+                        UUID uuid = storageManager.getUuidForPath(getAppContext().getFilesDir());
+                        return stManager.getFreeBytes(uuid);
+                    } catch (IOException e) {
+                        Log.d(LOG_TAG, "availableBytes: " + e.getMessage());
+                    }
+                } else {
+                    try{
+                        UUID uuid = storageManager.getUuidForPath(getAppContext().getExternalFilesDir(null));
+                        return stManager.getFreeBytes(uuid);
+                    }catch (IOException e) {Log.d(LOG_TAG, "availableBytes: " + e.getMessage());}
+                }
+            }
+        }
+        return 0l;
+    }
+
+    public boolean isExternalStorageWritable() {
+        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+    }
+
+    public boolean isExternalStorageReadable() {
+        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) ||
+                Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
     }
 
 }
