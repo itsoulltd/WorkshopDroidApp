@@ -12,6 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +29,7 @@ import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.operations.EncryptedFileFetchingService;
+import lab.infoworks.starter.operations.EncryptedFileFetchingWorker;
 import lab.infoworks.starter.ui.activities.riderDetail.photos.PhotosFragment;
 
 /**
@@ -101,11 +106,23 @@ public class RiderFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         addNestedFragment();
         //Start EncryptedFileFetchingService
-        Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
+        /*Intent intent = new Intent(getActivity(), EncryptedFileFetchingService.class);
         intent.putExtra("baseUrl", BuildConfig.api_gateway);
         intent.putExtra("jwt-token", "---");
         intent.putExtra("userid", 1011);
-        getActivity().startService(intent);
+        getActivity().startService(intent);*/
+        //
+        Data data = new Data.Builder()
+                .putString("baseUrl", BuildConfig.api_gateway)
+                .putString("jwt-token", "---")
+                .putInt("userid", 1011)
+                .build();
+        WorkRequest request = new OneTimeWorkRequest.Builder(EncryptedFileFetchingWorker.class)
+                .setInputData(data)
+                .build();
+        //
+        WorkManager.getInstance(getContext())
+                .enqueue(request);
     }
 
     private void addNestedFragment() {
@@ -119,7 +136,7 @@ public class RiderFragment extends Fragment {
         super.onDestroyView();
         unbinder.unbind();
         //Stop EncryptedFileFetchingService
-        getActivity().stopService(new Intent(getActivity(), EncryptedFileFetchingService.class));
+        /*getActivity().stopService(new Intent(getActivity(), EncryptedFileFetchingService.class));*/
     }
 
     @Override
