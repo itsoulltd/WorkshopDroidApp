@@ -7,6 +7,7 @@ import android.util.Log;
 import com.it.soul.lab.data.base.DataSource;
 import com.it.soul.lab.data.base.DataStorage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +89,12 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         ((DataStorage)dataSource).save(true);
     }
 
+    @Override
+    public List<String> fetchPhotos(Integer userId) throws IOException {
+        Response<List<String>> response = getPhotoApiService().fetchPhotos(userId).execute();
+        return response.body();
+    }
+
     @Override //@RequiresApi(Build.VERSION_CODES.N)
     public void fetchPhotos(Integer userId, Consumer<List<String>> consumer) {
         getPhotoApiService().fetchPhotos(userId)
@@ -103,6 +110,15 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
                         if (consumer != null) consumer.accept(new ArrayList<>());
                     }
                 });
+    }
+
+    @Override
+    public String fetchPhoto(Integer userId, String imgPath) throws IOException {
+        Response<Map<String,String>> response = getPhotoApiService().fetchPhoto(userId, imgPath).execute();
+        Map<String,String> json = response.body();
+        String encrypted = json.get("img");
+        String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
+        return decryptedBase64;
     }
 
     @Override //@RequiresApi(Build.VERSION_CODES.N)
