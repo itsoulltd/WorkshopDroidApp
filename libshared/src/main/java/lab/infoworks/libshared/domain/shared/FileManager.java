@@ -52,9 +52,9 @@ public class FileManager implements AutoCloseable{
     }
 
     public FileManager(Context application) {
-        this.appContext = (appContext instanceof Application)
+        this.appContext = (application instanceof Application)
                 ? application.getApplicationContext()
-                : appContext;
+                : application;
     }
 
     public FileManager(Context application, StorageMode mode) {

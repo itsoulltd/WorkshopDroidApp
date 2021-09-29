@@ -125,8 +125,9 @@ public class MediaStorage {
                 Expression[] expressions = predicate.resolveExpressions();
                 if (expressions != null && expressions.length > 0){
                     Expression expression = expressions[0];
-                    String pro = expression.getProperty().replaceAll(" ", "");
-                    pro = pro + " " + expression.getType().toString() + " ";
+                    /*String pro = expression.getProperty().replaceAll(" ", "");
+                    pro = pro + " " + expression.getType().toString() + " " + "?";*/
+                    String pro = expression.interpret();
                     return pro;
                 }
             }
