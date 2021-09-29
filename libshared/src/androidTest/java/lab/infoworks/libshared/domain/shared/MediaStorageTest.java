@@ -207,6 +207,47 @@ public class MediaStorageTest {
         //
     }
 
+    @Test
+    public void createFlowTest_Images() {
+        // Need the READ_EXTERNAL_STORAGE permission if accessing video files that your
+        // app didn't create.
+        Assert.assertTrue("READ Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+        Assert.assertTrue("WRITE Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+
+        //Write the search clause:
+        String sizeIs = "30";
+        Predicate predicate = new Where(MediaStore.Images.Media.SIZE)
+                .isGreaterThenOrEqual(sizeIs);
+        //Fetch the query:
+        List<MediaStorage.MediaStoreItem> items = new MediaStorage.Builder(appContext)
+                .from(MediaStorage.Type.Image)
+                .select(MediaStore.Images.Media._ID,
+                        MediaStore.Images.Media.DISPLAY_NAME,
+                        MediaStore.Images.Media.SIZE)
+                .where(predicate)
+                .orderBy(MediaStore.Images.Media.DISPLAY_NAME)
+                .fetch((cursor, index) -> {
+                    //Get values of columns for a given video.
+                    int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                    long id = cursor.getLong(idColumn);
+                    Uri contentUri = ContentUris.withAppendedId(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    //
+                    int nameColumn =
+                            cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                    String name = cursor.getString(nameColumn);
+                    //
+                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE);
+                    int size = cursor.getInt(sizeColumn);
+                    //Finally return:
+                    return new Image(contentUri, name, size);
+                });
+        //Do what you want to do with items
+        //...
+    }
+
     private class Video extends MediaStorage.MediaStoreItem {
 
         private final Uri uri;
@@ -215,11 +256,24 @@ public class MediaStorageTest {
         private final int size;
 
         public Video(Uri uri, String name, int duration, int size) {
-            super(MediaStorage.Type.Video, uri, name, duration, size);
+            super(MediaStorage.Type.Video, uri, name, size);
             this.uri = uri;
             this.name = name;
             this.duration = duration;
             this.size = size;
         }
     }
+
+    private class Image extends MediaStorage.MediaStoreItem {
+        private final Uri uri;
+        private final String name;
+        private final int size;
+        public Image(Uri contentUri, String name, int size) {
+            super(MediaStorage.Type.Image, contentUri, name, size);
+            this.uri = contentUri;
+            this.name = name;
+            this.size = size;
+        }
+    }
+
 }
