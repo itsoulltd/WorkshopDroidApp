@@ -81,8 +81,9 @@ public class PhotosFragment extends Fragment {
             ViewModelProviders.of(this).get(RiderDetailViewModel.class)
                     .getPhotos().observe(getViewLifecycleOwner(), (riderPhotos) -> {
                 //Read Bitmap from disk assign to Photo.photo
-                File albumDir = new File(getContext().getFilesDir(), albumName);
                 FileManager fileManager = new FileManager(getContext());
+                //File albumDir = new File(getContext().getFilesDir(), albumName);
+                File albumDir = fileManager.createFolder(albumName);
                 for (RiderPhoto photo : riderPhotos) {
                     /*File imgFile = new File(dir, photo.getImageName());
                     if (imgFile.exists()){
