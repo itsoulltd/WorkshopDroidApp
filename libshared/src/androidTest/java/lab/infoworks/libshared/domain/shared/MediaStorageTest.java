@@ -1,5 +1,6 @@
 package lab.infoworks.libshared.domain.shared;
 
+import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
@@ -148,6 +150,61 @@ public class MediaStorageTest {
                 });
         //Do what you want to do with items
         //...
+    }
+
+    @Test
+    public void createFlowTest_2() {
+        // Need the READ_EXTERNAL_STORAGE permission if accessing video files that your
+        // app didn't create.
+        Assert.assertTrue("READ Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+        Assert.assertTrue("WRITE Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+
+        //Write the search clause:
+        String durationIs = String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES));
+        Predicate predicate = new Where(MediaStore.Video.Media.DURATION)
+                .isGreaterThenOrEqual(durationIs);
+        //Fetch the query:
+        new MediaStorage.Builder(appContext)
+                .from(MediaStorage.Type.Video)
+                .select(MediaStore.Video.Media._ID,
+                        MediaStore.Video.Media.DISPLAY_NAME,
+                        MediaStore.Video.Media.DURATION,
+                        MediaStore.Video.Media.SIZE)
+                .where(predicate)
+                .orderBy(MediaStore.Video.Media.DISPLAY_NAME)
+                .onComplete((items) -> {
+                    if (items != null){
+                        //Do what you want to do with items
+                        //Update ui on main thread:
+                        /*((Activity) myActivity).runOnUiThread(() -> {
+                            //On Main Thread:
+                        });*/
+                        //...
+                    }
+                })
+                .fetch(Executors.newSingleThreadExecutor(), (cursor, index) -> {
+                    //Get values of columns for a given video.
+                    int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
+                    long id = cursor.getLong(idColumn);
+                    Uri contentUri = ContentUris.withAppendedId(
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
+                    //
+                    int nameColumn =
+                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
+                    String name = cursor.getString(nameColumn);
+                    //
+                    int durationColumn =
+                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
+                    int duration = cursor.getInt(durationColumn);
+                    //
+                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE);
+                    int size = cursor.getInt(sizeColumn);
+                    //Finally return:
+                    return new Video(contentUri, name, duration, size);
+                });
+        //
     }
 
     private class Video extends MediaStorage.MediaStoreItem {

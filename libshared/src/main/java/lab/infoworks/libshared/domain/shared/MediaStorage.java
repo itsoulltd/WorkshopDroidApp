@@ -14,7 +14,9 @@ import com.it.soul.lab.sql.query.models.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class MediaStorage {
 
@@ -35,6 +37,7 @@ public class MediaStorage {
         private Predicate predicate;
         private Order order;
         private String orderColumn;
+        private Consumer onComplete;
 
         @Override
         public Select from(Type type) {
@@ -102,6 +105,12 @@ public class MediaStorage {
             return this;
         }
 
+        /**
+         * Call the fetch() method in a worker thread.
+         * @param mapper
+         * @param <T>
+         * @return
+         */
         @Override
         public <T extends MediaStoreItem> List<T> fetch(MediaStoreItemMapper<T> mapper) {
             AtomicInteger incrementer = new AtomicInteger(0);
@@ -119,6 +128,22 @@ public class MediaStorage {
                 }
             }
             return items;
+        }
+
+        @Override
+        public <T extends MediaStoreItem> Fetch onComplete(Consumer<List<T>> consumer) {
+            this.onComplete = consumer;
+            return this;
+        }
+
+        @Override
+        public <T extends MediaStoreItem> void fetch(Executor executor, MediaStoreItemMapper<T> mapper) {
+            if (executor != null && onComplete != null){
+                executor.execute(() -> {
+                    List<T> items = fetch(mapper);
+                    onComplete.accept(items);
+                });
+            }
         }
 
         private String[] getSelectionsArgs() {
@@ -180,7 +205,16 @@ public class MediaStorage {
     }
 
     public interface Fetch {
+        /**
+         * Call the fetch() method in a worker thread.
+         * @param mapper
+         * @param <T>
+         * @return
+         */
         <T extends MediaStoreItem> List<T> fetch(MediaStoreItemMapper<T> mapper);
+
+        <T extends MediaStoreItem> void fetch(Executor executor, MediaStoreItemMapper<T> mapper);
+        <T extends MediaStoreItem> Fetch onComplete(Consumer<List<T>> consumer);
     }
 
     public static class MediaStoreItem extends Entity {
