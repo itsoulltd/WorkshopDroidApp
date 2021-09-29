@@ -2,6 +2,7 @@ package lab.infoworks.libshared.domain.shared;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -9,11 +10,14 @@ import android.provider.MediaStore;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.it.soul.lab.sql.query.models.Predicate;
 import com.it.soul.lab.sql.query.models.Where;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +30,12 @@ public class MediaStorageTest {
 
     private Context appContext;
 
+    @Rule
+    public GrantPermissionRule storageReadRule = GrantPermissionRule.grant("android.permission.READ_EXTERNAL_STORAGE");
+    @Rule
+    public GrantPermissionRule storageWriteRule = GrantPermissionRule.grant("android.permission.WRITE_EXTERNAL_STORAGE");
+
+
     @Before
     public void before(){
         appContext = InstrumentationRegistry.getTargetContext();
@@ -36,6 +46,10 @@ public class MediaStorageTest {
 
         // Need the READ_EXTERNAL_STORAGE permission if accessing video files that your
         // app didn't create.
+        Assert.assertTrue("READ Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+        Assert.assertTrue("WRITE Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
 
         List<Video> videoList = new ArrayList<>();
 
@@ -92,6 +106,13 @@ public class MediaStorageTest {
 
     @Test
     public void createFlowTest() {
+        // Need the READ_EXTERNAL_STORAGE permission if accessing video files that your
+        // app didn't create.
+        Assert.assertTrue("READ Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+        Assert.assertTrue("WRITE Permission not Granted!"
+                , appContext.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED);
+
         //Write the search clause:
         String durationIs = String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES));
         Predicate predicate = new Where(MediaStore.Video.Media.DURATION)
@@ -106,23 +127,23 @@ public class MediaStorageTest {
                 .where(predicate)
                 .orderBy(MediaStore.Video.Media.DISPLAY_NAME)
                 .fetch((cursor, index) -> {
-                    //Cache column indices.
-                    int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
-                    int nameColumn =
-                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
-                    int durationColumn =
-                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
-                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE);
-
                     //Get values of columns for a given video.
+                    int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
                     long id = cursor.getLong(idColumn);
-                    String name = cursor.getString(nameColumn);
-                    int duration = cursor.getInt(durationColumn);
-                    int size = cursor.getInt(sizeColumn);
-
                     Uri contentUri = ContentUris.withAppendedId(
                             MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
-
+                    //
+                    int nameColumn =
+                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
+                    String name = cursor.getString(nameColumn);
+                    //
+                    int durationColumn =
+                            cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
+                    int duration = cursor.getInt(durationColumn);
+                    //
+                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE);
+                    int size = cursor.getInt(sizeColumn);
+                    //Finally return:
                     return new Video(contentUri, name, duration, size);
                 });
         //Do what you want to do with items

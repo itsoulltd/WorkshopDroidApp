@@ -48,13 +48,29 @@ public class MediaStorage {
                 }
             } else if (type == Type.Audio){
                 mediaClsType = MediaStore.Audio.class;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    from = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+                } else {
+                    from = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
             } else if (type == Type.Image){
                 mediaClsType = MediaStore.Images.class;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    from = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+                } else {
+                    from = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                }
             } else if (type == Type.File){
                 mediaClsType = MediaStore.Files.class;
+                from = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
             } else if (type == Type.Download){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     mediaClsType = MediaStore.Downloads.class;
+                    //from = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+                    from = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL);
+                } else{
+                    //Oder not implemented:
+                    throw new RuntimeException("MediaStore.Downloads.class not available before API-Level 29");
                 }
             }
             return this;
