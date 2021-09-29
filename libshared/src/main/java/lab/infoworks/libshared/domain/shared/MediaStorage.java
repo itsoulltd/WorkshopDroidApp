@@ -221,15 +221,13 @@ public class MediaStorage {
 
         private final Uri uri;
         private final String name;
-        private final int duration;
         private final int size;
         private final Type type;
 
-        public MediaStoreItem(Type type, Uri uri, String name, int duration, int size) {
+        public MediaStoreItem(Type type, Uri uri, String name, int size) {
             this.type = type;
             this.uri = uri;
             this.name = name;
-            this.duration = duration;
             this.size = size;
         }
 
@@ -239,10 +237,6 @@ public class MediaStorage {
 
         public String getName() {
             return name;
-        }
-
-        public int getDuration() {
-            return duration;
         }
 
         public int getSize() {
