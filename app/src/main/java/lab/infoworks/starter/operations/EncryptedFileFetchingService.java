@@ -9,6 +9,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
@@ -46,59 +47,39 @@ public class EncryptedFileFetchingService extends Service {
         baseUrl = intent.getStringExtra("baseUrl");
         jwtToken = intent.getStringExtra("jwt-token");
         userid = intent.getIntExtra("userid", 0000);
-        //
-        getPhotoRepository().fetchPhotos(userid, (imgPaths) -> {
-            int length = 0;
+        //Example
+        try{
+            //Create User's internal Dir
+            String albumName = userid.toString();
+            FileManager fileManager = new FileManager(getApplication());
+            File albumDir = fileManager.createFolder(albumName);
+            //
+            List<String> imgPaths = getPhotoRepository().fetchPhotos(userid);
             for (String imgPath : imgPaths) {
-                //Create User's internal Dir
-                String albumName = userid.toString();
-                FileManager fileManager = new FileManager(getApplication());
-                /*File internalFilesDir = getApplicationContext().getFilesDir();
-                final File userDir = new File(internalFilesDir, albumName);
-                if (!userDir.exists()) {
-                    Log.d(TAG, "onStartCommand: Dir created ? " + (userDir.mkdir() ? "true" : "false"));;
-                }*/
-                File albumDir = fileManager.createFolder(albumName);
                 //fetch Images:
-                getPhotoRepository().fetchPhoto(userid, imgPath, (decryptedBase64) -> {
-                    //Create Image From String
-                    //then save into internal storage:
-                    if (decryptedBase64 != null && !decryptedBase64.isEmpty()){
-                        try {
-                            Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
-                            String fileName = imgPath.replace("sample/", "");
-                            //Now save into internal disk:
-                            /*File imgFile = new File(albumDir, fileName);
-                            if (imgFile.exists()){
-                                //IF-EXIST-DELETE
-                                Log.d(TAG, "onStartCommand: File Deleted when Exist:"
-                                        + (imgFile.delete() ? "true" : "false"));
-                            }*/
-                            /*File imgFile = fileManager.getFile(albumDir, fileName, true);
-                            FileOutputStream fos = new FileOutputStream(imgFile);
-                            Bitmap.CompressFormat format = (fileName.toLowerCase().contains("png"))
-                                    ? Bitmap.CompressFormat.PNG
-                                    : Bitmap.CompressFormat.JPEG;
-                            bitmap.compress(format, 100, fos);
-                            fos.flush();
-                            fos.close();*/
-                            fileManager.saveBitmap(bitmap, albumDir, fileName, 100);
-                            //Now save meta-data into db:
-                            getPhotoRepository().addPhotoToAlbum(userid, albumName, fileName);
-                        } catch (IOException e) {
-                            Log.e(TAG, e.getMessage());
-                        }
+                String decryptedBase64 = getPhotoRepository().fetchPhoto(userid, imgPath);
+                //Create Image From String
+                //then save into internal storage:
+                if (decryptedBase64 != null && !decryptedBase64.isEmpty()){
+                    try {
+                        Bitmap bitmap = AssetManager.readImageFromBase64(decryptedBase64);
+                        String fileName = imgPath.replace("sample/", "");
+                        fileManager.saveBitmap(bitmap, albumDir, fileName, 100);
+                        //Now save meta-data into db:
+                        getPhotoRepository().addPhotoToAlbum(userid, albumName, fileName);
+                    } catch (IOException e) {
+                        Log.e(TAG, e.getMessage());
                     }
-                });
-                if (++length == imgPaths.size()){
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("albumName", albumName);
-                    data.put("userid", userid);
-                    NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
                 }
             }
-        });
-
+            //
+            Map<String, Object> data = new HashMap<>();
+            data.put("albumName", albumName);
+            data.put("userid", userid);
+            NotificationCenter.postNotification(getApplication().getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
+        } catch (IOException e) {
+            Log.d(TAG, e.getMessage());
+        }
         return START_STICKY;
     }
 

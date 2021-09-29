@@ -48,13 +48,13 @@ public class EncryptedFileFetchingWorker extends Worker {
     public Result doWork() {
         //Example:
         try {
-            List<String> imgPaths = getPhotoRepository().fetchPhotos(userid);
+            //Create User's internal Dir
             String albumName = userid.toString();
             FileManager fileManager = new FileManager(getApplicationContext());
             File albumDir = fileManager.createFolder(albumName);
             //
+            List<String> imgPaths = getPhotoRepository().fetchPhotos(userid);
             for (String imgPath : imgPaths) {
-                //Create User's internal Dir
                 //fetch Images:
                 String decryptedBase64 = getPhotoRepository().fetchPhoto(userid, imgPath);
                 //Create Image From String
@@ -79,7 +79,7 @@ public class EncryptedFileFetchingWorker extends Worker {
             NotificationCenter.postNotification(getApplicationContext(), ENCRYPTED_SERVICE_COMPLETE, data);
             return Result.success();
         } catch (IOException e) {
-            Log.d(TAG, "doWork: " + e.getMessage());
+            Log.d(TAG, e.getMessage());
         }
         return Result.failure();
     }
