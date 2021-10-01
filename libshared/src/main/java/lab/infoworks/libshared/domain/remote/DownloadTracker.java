@@ -2,6 +2,7 @@ package lab.infoworks.libshared.domain.remote;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,6 +29,11 @@ public class DownloadTracker {
     public static final String TAG = "DownloadTracker";
     private static Map<Long, TrackItem> sourceMap = new ConcurrentHashMap<>();
 
+    public static void viewOnGoingDownloads(Activity activity){
+        Intent intent = new Intent();
+        intent.setAction(DownloadManager.ACTION_VIEW_DOWNLOADS);
+        activity.startActivity(intent);
+    }
 
     public static void registerReceiverForCompletion(Context application){
         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
@@ -38,7 +44,7 @@ public class DownloadTracker {
         @Override
         public void onReceive(Context context, Intent intent) {
             long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            TrackItem item = sourceMap.get(referenceId);
+            TrackItem item = sourceMap.remove(referenceId);
             if (item != null){
                 try {
                     DownloadManager manager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
@@ -158,6 +164,12 @@ public class DownloadTracker {
             request.setDestinationInExternalFilesDir(weakContext.get(), directoryName, fileName);
             return this;
         }
+
+        @Override
+        public DownloadRequest setNotificationVisibility(int visibility) {
+            request.setNotificationVisibility(visibility);
+            return this;
+        }
     }
 
     public interface Tracker {
@@ -172,6 +184,7 @@ public class DownloadTracker {
         DownloadRequest setTitle(String title);
         DownloadRequest setDescription(String des);
         DownloadRequest setDestinationInExternalFilesDir(String fileName, String directoryName);
+        DownloadRequest setNotificationVisibility(int visibility);
     }
 
     private static class TrackItem extends Entity{
