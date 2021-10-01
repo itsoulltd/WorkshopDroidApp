@@ -114,10 +114,8 @@ public class DownloadTracker {
                     //column for reason code if the download failed or paused
                     int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
                     int reason = cursor.getInt(columnReason);
-                    //get the download filename
-                    int filenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-                    String filename = cursor.getString(filenameIndex);
-                    TrackItemStatus itemStatus = new TrackItemStatus(status, reason, filename);
+                    //
+                    TrackItemStatus itemStatus = new TrackItemStatus(status, reason);
                     consumer.accept(itemStatus);
                 }
             }
@@ -130,7 +128,7 @@ public class DownloadTracker {
                 int status = manager.remove(fromSource.getRef());
                 return new TrackItemStatus(status).getStatus();
             }
-            return new TrackItemStatus(DownloadManager.STATUS_FAILED).getStatus();
+            return new TrackItemStatus(DownloadManager.STATUS_SUCCESSFUL).getStatus();
         }
 
         /**
