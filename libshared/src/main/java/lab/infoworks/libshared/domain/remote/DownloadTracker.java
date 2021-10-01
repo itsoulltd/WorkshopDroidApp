@@ -70,6 +70,13 @@ public class DownloadTracker {
         private final DownloadManager manager;
         private WeakReference<Context> weakContext;
 
+        public Builder(Context context) {
+            item = null;
+            request = null;
+            manager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+            weakContext = new WeakReference<>(context);
+        }
+
         public Builder(Context context, String downloadLink) {
             item = new TrackItem(downloadLink);
             request = new DownloadManager.Request(item.link);
@@ -82,42 +89,48 @@ public class DownloadTracker {
          * @param consumer
          */
         @Override
-        public void enqueue(Consumer<FileInputStream> consumer) {
-            if (consumer == null) return;
+        public long enqueue(Consumer<FileInputStream> consumer) {
+            if (consumer == null) return 0l;
             Long ref = manager.enqueue(request);
             item.setRef(ref);
             item.setRequest(request);
             item.setConsumer(consumer);
-            sourceMap.put(item.getKey(), item);
+            sourceMap.put(item.getRef(), item);
+            return ref;
         }
 
         @Override
-        public void checkStatus(Consumer<TrackItemStatus> consumer) {
+        public void checkStatus(long ref, Consumer<TrackItemStatus> consumer) {
             if (consumer == null) return;
-            DownloadManager.Query query = new DownloadManager.Query();
-            TrackItem fromSource = sourceMap.get(item.getKey());
-            query.setFilterById(fromSource.getRef());
-            Cursor cursor = manager.query(query);
-            if(cursor.moveToFirst()){
-                //column for status
-                int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                int status = cursor.getInt(columnIndex);
-                //column for reason code if the download failed or paused
-                int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-                int reason = cursor.getInt(columnReason);
-                //get the download filename
-                int filenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-                String filename = cursor.getString(filenameIndex);
-                TrackItemStatus itemStatus = new TrackItemStatus(status, reason, filename);
-                consumer.accept(itemStatus);
+            TrackItem fromSource = sourceMap.get(ref);
+            if (fromSource != null){
+                DownloadManager.Query query = new DownloadManager.Query();
+                query.setFilterById(fromSource.getRef());
+                Cursor cursor = manager.query(query);
+                if(cursor.moveToFirst()){
+                    //column for status
+                    int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int status = cursor.getInt(columnIndex);
+                    //column for reason code if the download failed or paused
+                    int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+                    int reason = cursor.getInt(columnReason);
+                    //get the download filename
+                    int filenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
+                    String filename = cursor.getString(filenameIndex);
+                    TrackItemStatus itemStatus = new TrackItemStatus(status, reason, filename);
+                    consumer.accept(itemStatus);
+                }
             }
         }
 
         @Override
-        public int cancel() {
-            TrackItem fromSource = sourceMap.get(item.getKey());
-            int status = manager.remove(fromSource.getRef());
-            return status;
+        public String cancel(long ref) {
+            TrackItem fromSource = sourceMap.remove(ref);
+            if (fromSource != null){
+                int status = manager.remove(fromSource.getRef());
+                return new TrackItemStatus(status).getStatus();
+            }
+            return new TrackItemStatus(DownloadManager.STATUS_FAILED).getStatus();
         }
 
         /**
@@ -127,24 +140,28 @@ public class DownloadTracker {
          */
         @Override
         public DownloadRequest setAllowedNetworkTypes(int types) {
+            if (request == null) return this;
             request.setAllowedNetworkTypes(types);
             return this;
         }
 
         @Override
         public DownloadRequest setAllowedOverRoaming(boolean shouldRoaming) {
+            if (request == null) return this;
             request.setAllowedOverRoaming(shouldRoaming);
             return this;
         }
 
         @Override
         public DownloadRequest setTitle(String title) {
+            if (request == null) return this;
             request.setTitle(title);
             return this;
         }
 
         @Override
         public DownloadRequest setDescription(String des) {
+            if (request == null) return this;
             request.setDescription(des);
             return this;
         }
@@ -161,21 +178,23 @@ public class DownloadTracker {
          */
         @Override
         public DownloadRequest setDestinationInExternalFilesDir(String fileName, String directoryName) {
+            if (request == null) return this;
             request.setDestinationInExternalFilesDir(weakContext.get(), directoryName, fileName);
             return this;
         }
 
         @Override
         public DownloadRequest setNotificationVisibility(int visibility) {
+            if (request == null) return this;
             request.setNotificationVisibility(visibility);
             return this;
         }
     }
 
     public interface Tracker {
-        void enqueue(Consumer<FileInputStream> consumer);
-        void checkStatus(Consumer<TrackItemStatus> consumer);
-        int cancel();
+        long enqueue(Consumer<FileInputStream> consumer);
+        void checkStatus(long ref, Consumer<TrackItemStatus> consumer);
+        String cancel(long ref);
     }
 
     public interface DownloadRequest extends Tracker{
@@ -254,9 +273,17 @@ public class DownloadTracker {
         private String reason;
         private String downloadedFileName;
 
-        public TrackItemStatus(int status, int reason, String downloadedFileName) {
+        public TrackItemStatus(int status){
             this.status = translateStatus(status);
+        }
+
+        public TrackItemStatus(int status, int reason){
+            this(status);
             this.reason = translateReason(reason);
+        }
+
+        public TrackItemStatus(int status, int reason, String downloadedFileName) {
+            this(status, reason);
             this.downloadedFileName = downloadedFileName;
         }
 
