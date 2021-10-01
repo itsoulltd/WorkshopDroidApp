@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import lab.infoworks.libshared.domain.remote.DownloadTracker;
 import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.util.DeviceUuid;
 
@@ -22,7 +23,8 @@ public class StarterApp extends Application {
         //Generate Device UUID:
         UUID uuid = new DeviceUuid(getApplicationContext()).getUuid();
         Log.d("StarterApp", "Device UUID: " + uuid);
-        //
+        //Register for Download Complete:
+        DownloadTracker.registerReceiverForCompletion(this);
     }
 
 }
