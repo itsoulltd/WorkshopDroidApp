@@ -25,6 +25,7 @@ import lab.infoworks.libshared.domain.remote.DownloadTracker;
 import lab.infoworks.libshared.domain.shared.AssetManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
+import lab.infoworks.starter.ui.app.StarterApp;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -141,10 +142,8 @@ public class AppFragment extends Fragment {
 
     @OnClick(R.id.statusDownloadButton)
     public void updateStatusDownload(){
-        new DownloadTracker.Builder(getActivity())
-                .checkStatus(dRef, (status) -> {
-                    statusTextView.setText(status.getStatus());
-                });
+        DownloadTracker.TrackItemStatus status = new DownloadTracker.Builder(getActivity()).checkStatus(dRef);
+        statusTextView.setText(status.getStatus());
     }
 
     @OnClick(R.id.showDownloadsButton)
