@@ -1,6 +1,5 @@
 package lab.infoworks.starter.ui.activities.riderDetail;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +11,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,7 +31,6 @@ import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.R;
-import lab.infoworks.starter.operations.EncryptedFileFetchingService;
 import lab.infoworks.starter.operations.EncryptedFileFetchingWorker;
 import lab.infoworks.starter.ui.activities.riderDetail.photos.PhotosFragment;
 
@@ -117,12 +119,22 @@ public class RiderFragment extends Fragment {
                 .putString("jwt-token", "---")
                 .putInt("userid", 1011)
                 .build();
+        Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+        //Example of OneTime WorkerRequest:
         WorkRequest request = new OneTimeWorkRequest.Builder(EncryptedFileFetchingWorker.class)
                 .setInputData(data)
+                .addTag("getPhotos")
+                .setConstraints(constraints)
                 .build();
+        //Example of Repeatable WorkRequest:
+        /*request = new PeriodicWorkRequest.Builder(EncryptedFileFetchingWorker.class, 15, TimeUnit.MINUTES)
+                .setInputData(data)
+                .addTag("getPhotos")
+                .setConstraints(constraints)
+                .build();
+        WorkManager.getInstance(getContext()).cancelAllWorkByTag("getPhotos");*/
         //
-        WorkManager.getInstance(getContext())
-                .enqueue(request);
+        WorkManager.getInstance(getContext()).enqueue(request);
     }
 
     private void addNestedFragment() {
