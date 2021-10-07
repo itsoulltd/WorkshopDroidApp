@@ -7,7 +7,7 @@ import javax.crypto.SecretKey;
 
 public interface Cryptor {
 
-    static Cryptor create(){ return AESKeyStore.getInstance(); /*new AESCryptor();*/ }
+    static Cryptor create(){return new AESCryptor();}
 
     SecretKey getKeySpace(String key) throws UnsupportedEncodingException, NoSuchAlgorithmException;
     String encrypt(String secret, String strToEncrypt);
