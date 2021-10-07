@@ -8,6 +8,8 @@ import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.Log;
 
+import com.google.android.gms.common.util.IOUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,12 +31,15 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.security.auth.x500.X500Principal;
 
 import lab.infoworks.libshared.domain.shared.AppStorage;
@@ -114,8 +119,13 @@ public class SecretKeyStore implements iSecretKeyStore{
         return getCryptor().decrypt(secret, text);
     }
 
-    public void storeSecret(String alias, String secret) throws RuntimeException{
+    public void storeSecret(String alias, String secret, boolean replace) throws RuntimeException{
         try {
+            if (replace == false){
+                String encryptedSecret = getAppStorage().stringValue(alias);
+                if (encryptedSecret != null && !encryptedSecret.isEmpty()) return;
+            }
+            //Now not exist:
             Key pbKey = createSecretKey(alias, getContext());
             if (pbKey == null) {
                 Log.d(TAG, "storeSecret: " + "Already exist.");
@@ -145,15 +155,18 @@ public class SecretKeyStore implements iSecretKeyStore{
             Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
             cipher.init(Cipher.ENCRYPT_MODE, pbKey);
             //
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            /*ByteArrayOutputStream bos = new ByteArrayOutputStream();
             CipherOutputStream cos = new CipherOutputStream(bos, cipher);
             cos.write(secret.getBytes(StandardCharsets.UTF_8));
             cos.close();
+            byte[] encryptedBytes = bos.toByteArray();*/
             //
-            byte[] encryptedBytes = bos.toByteArray();
+            byte[] encryptedBytes = cipher.doFinal(secret.getBytes(StandardCharsets.UTF_8));
             String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+            Log.d("StarterApp", "encryptUsingAesSecretKey: " + encrypted);
             return encrypted;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException
+                | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -183,19 +196,30 @@ public class SecretKeyStore implements iSecretKeyStore{
         return "";
     }
 
-    private String decryptUsingAesSecretKey(SecretKey key, String encryptedRandDeviceKey) throws RuntimeException{
+    private String decryptUsingAesSecretKey(SecretKey key, String encrypted) throws RuntimeException{
         try {
+            Cipher decipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
+            decipher.init(Cipher.ENCRYPT_MODE, key);
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(decipher.getIV());
+            //
             Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
-            cipher.init(Cipher.DECRYPT_MODE, key);
+            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
             //
-            ByteArrayInputStream bis = new ByteArrayInputStream(Base64.decode(encryptedRandDeviceKey, Base64.DEFAULT));
+            Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
+            byte[] encryptedBytes = Base64.decode(encrypted.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
+            /*ByteArrayInputStream bis = new ByteArrayInputStream(encryptedBytes);
             CipherInputStream cis = new CipherInputStream(bis, cipher);
-            byte[] readBytes = new byte[cis.available()];
-            cis.read(readBytes);
+            //byte[] readBytes = new byte[encryptedBytes.length];
+            //cis.read(readBytes);
+            byte[] readBytes = IOUtils.readInputStreamFully(cis, false);
+            cis.close();*/
             //
+            byte[] readBytes = cipher.doFinal(encryptedBytes);
             String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
             return decryptedText;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException
+                | InvalidKeyException | BadPaddingException
+                | InvalidAlgorithmParameterException | IllegalBlockSizeException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
