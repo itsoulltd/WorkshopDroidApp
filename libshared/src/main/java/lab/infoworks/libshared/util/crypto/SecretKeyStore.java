@@ -38,19 +38,19 @@ import javax.security.auth.x500.X500Principal;
 
 import lab.infoworks.libshared.domain.shared.AppStorage;
 
-public class AESKeyStore implements iSecretKeyStore{
+public class SecretKeyStore implements iSecretKeyStore{
 
     public static final String ANDROID_KEY_STORE = "AndroidKeyStore";
-    public static final String TAG = AESKeyStore.class.getSimpleName();
-    private static volatile AESKeyStore instance;
+    public static final String TAG = SecretKeyStore.class.getSimpleName();
+    private static volatile SecretKeyStore instance;
     private static final ReentrantLock REENTRANT_LOCK = new ReentrantLock();
 
-    public static AESKeyStore getInstance(Context context){
+    public static SecretKeyStore getInstance(Context context){
         if (instance == null){
             REENTRANT_LOCK.lock();
             try {
                 if (instance == null){
-                    instance = new AESKeyStore(context);
+                    instance = new SecretKeyStore(context);
                 }
             } catch (Exception e){ }
             finally {
@@ -66,7 +66,7 @@ public class AESKeyStore implements iSecretKeyStore{
     private AppStorage appStorage;
     private Cryptor cryptor;
 
-    private AESKeyStore(Context context) {
+    private SecretKeyStore(Context context) {
         this.cryptor = Cryptor.create();
         this.weakContext = new WeakReference<>(context);
         this.appStorage = new AppStorage(context);
