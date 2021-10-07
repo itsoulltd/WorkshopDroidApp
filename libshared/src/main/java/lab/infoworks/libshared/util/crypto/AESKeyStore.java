@@ -4,12 +4,17 @@ import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
+import android.util.Base64;
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -19,10 +24,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.security.auth.x500.X500Principal;
 
@@ -103,6 +113,7 @@ public class AESKeyStore implements iSecretKeyStore{
             Key pbKey = createSecretKey(alias, getContext());
             if (pbKey == null) {
                 Log.d(TAG, "storeSecret: " + "Already exist.");
+                //
                 KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
                 if (entry instanceof KeyStore.PrivateKeyEntry){
                     pbKey = ((KeyStore.PrivateKeyEntry) entry).getCertificate().getPublicKey();
@@ -123,12 +134,27 @@ public class AESKeyStore implements iSecretKeyStore{
         }
     }
 
-    private String encryptUsingAesSecretKey(SecretKey pbKey, String secret) {
-        return null;
+    private String encryptUsingAesSecretKey(SecretKey pbKey, String secret) throws RuntimeException{
+        try {
+            Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
+            cipher.init(Cipher.ENCRYPT_MODE, pbKey);
+            //
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            CipherOutputStream cos = new CipherOutputStream(bos, cipher);
+            cos.write(secret.getBytes(StandardCharsets.UTF_8));
+            cos.close();
+            //
+            byte[] encryptedBytes = bos.toByteArray();
+            String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+            return encrypted;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
-    private String encryptUsingRsaPublicKey(RSAPublicKey pbKey, String secret) {
-        return null;
+    private String encryptUsingRsaPublicKey(RSAPublicKey pbKey, String secret) throws RuntimeException{
+        //TODO:
+        throw new RuntimeException("NOT IMPLEMENTED YET!");
     }
 
     public String getStoredSecret(String alias) throws RuntimeException {
@@ -136,8 +162,8 @@ public class AESKeyStore implements iSecretKeyStore{
             String encryptedRandDeviceKey = getAppStorage().stringValue(alias);
             KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
             if (entry instanceof KeyStore.PrivateKeyEntry){
-                RSAPublicKey key = (RSAPublicKey) ((KeyStore.PrivateKeyEntry) entry).getCertificate().getPublicKey();
-                return decryptUsingRsaPublicKey(key, encryptedRandDeviceKey);
+                RSAPrivateKey key = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
+                return decryptUsingRsaPrivateKey(key, encryptedRandDeviceKey);
             } else if(entry instanceof KeyStore.SecretKeyEntry) {
                 SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
                 return decryptUsingAesSecretKey(key, encryptedRandDeviceKey);
@@ -148,12 +174,26 @@ public class AESKeyStore implements iSecretKeyStore{
         return "";
     }
 
-    private String decryptUsingAesSecretKey(SecretKey key, String encryptedRandDeviceKey) {
-        return null;
+    private String decryptUsingAesSecretKey(SecretKey key, String encryptedRandDeviceKey) throws RuntimeException{
+        try {
+            Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            //
+            ByteArrayInputStream bis = new ByteArrayInputStream(Base64.decode(encryptedRandDeviceKey, Base64.DEFAULT));
+            CipherInputStream cis = new CipherInputStream(bis, cipher);
+            byte[] readBytes = new byte[cis.available()];
+            cis.read(readBytes);
+            //
+            String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
+            return decryptedText;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
-    private String decryptUsingRsaPublicKey(RSAPublicKey key, String encryptedRandDeviceKey) {
-        return null;
+    private String decryptUsingRsaPrivateKey(RSAPrivateKey key, String encryptedRandDeviceKey) throws RuntimeException{
+        //TODO:
+        throw new RuntimeException("NOT IMPLEMENTED YET!");
     }
 
     protected Key createSecretKey(String alias, Context context)
@@ -167,7 +207,7 @@ public class AESKeyStore implements iSecretKeyStore{
                         KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE);
                 KeyGenParameterSpec.Builder builder =
                         new KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT);
-                builder.setKeySize(256);
+                builder.setKeySize(128);
                 builder.setBlockModes(KeyProperties.BLOCK_MODE_CBC);
                 builder.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
                 keyGenerator.init(builder.build());
