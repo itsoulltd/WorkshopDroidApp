@@ -162,14 +162,14 @@ public class SecretKeyStore implements iSecretKeyStore{
             if (!getKeyStore().containsAlias(alias)) {
                 throw new RuntimeException(alias + " Not Exist!");
             }
-            String encryptedRandDeviceKey = getAppStorage().stringValue(alias);
+            String encrypted = getAppStorage().stringValue(alias);
             KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
             if (entry instanceof KeyStore.PrivateKeyEntry){
                 RSAPrivateKey key = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
-                return decryptUsingRsaPrivateKey(key, encryptedRandDeviceKey);
+                return decryptUsingRsaPrivateKey(key, encrypted);
             } else if(entry instanceof KeyStore.SecretKeyEntry) {
                 SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
-                return decryptUsingAesSecretKey(key, encryptedRandDeviceKey);
+                return decryptUsingAesSecretKey(key, encrypted);
             }
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
             throw new RuntimeException(e.getMessage());
