@@ -136,7 +136,7 @@ public class AppFragment extends Fragment {
 
     @OnClick(R.id.stopDownloadButton)
     public void stopDownload(){
-        String status = new DownloadTracker.Builder(getActivity()).cancel(dRef);
+        String status = new DownloadTracker.Builder(getActivity()).cancel(dRef).getStatus();
         statusTextView.setText(status);
     }
 
