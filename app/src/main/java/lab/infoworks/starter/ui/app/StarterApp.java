@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lab.infoworks.libshared.domain.remote.DownloadTracker;
@@ -13,7 +14,7 @@ import lab.infoworks.starter.util.DeviceUuid;
 
 public class StarterApp extends Application {
 
-    public static Executor executor = Executors.newFixedThreadPool((Runtime.getRuntime().availableProcessors() / 2) + 1);
+    public static ExecutorService executor = Executors.newFixedThreadPool((Runtime.getRuntime().availableProcessors() / 2) + 1);
 
     @Override
     public void onCreate() {
@@ -27,4 +28,12 @@ public class StarterApp extends Application {
         DownloadTracker.registerReceiverForCompletion(this);
     }
 
+    @Override
+    public void onTerminate() {
+        if (executor != null && !executor.isShutdown()){
+            executor.shutdown();
+            executor = null;
+        }
+        super.onTerminate();
+    }
 }

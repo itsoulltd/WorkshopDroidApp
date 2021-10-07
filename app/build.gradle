@@ -92,7 +92,10 @@ dependencies {
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
     //OkHttp
-    implementation("com.squareup.okhttp3:okhttp:$rootProject.okhttpVersion")
+    //implementation("com.squareup.okhttp3:okhttp:$rootProject.okhttpVersion")
+    implementation ("com.squareup.okhttp3:okhttp:$rootProject.okhttpVersion"){
+        force = true //API 19 support
+    }
     testImplementation("com.squareup.okhttp3:mockwebserver:$rootProject.okhttpVersion")
     //Retrofit-2
     implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofit2"
