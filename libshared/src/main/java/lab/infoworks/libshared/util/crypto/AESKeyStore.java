@@ -1,36 +1,46 @@
 package lab.infoworks.libshared.util.crypto;
 
-import android.os.Build;
+import android.content.Context;
+import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
-import android.security.keystore.KeyProtection;
+import android.util.Log;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.security.auth.x500.X500Principal;
 
-public class AESKeyStore extends AESCryptor{
+import lab.infoworks.libshared.domain.shared.AppStorage;
+
+public class AESKeyStore implements iSecretKeyStore{
 
     public static final String ANDROID_KEY_STORE = "AndroidKeyStore";
-    public static final String SECRET_ALIAS = "MySecretAlias";
+    public static final String TAG = AESKeyStore.class.getSimpleName();
     private static volatile AESKeyStore instance;
     private static final ReentrantLock REENTRANT_LOCK = new ReentrantLock();
-    public static AESKeyStore getInstance(){
+
+    public static AESKeyStore getInstance(Context context){
         if (instance == null){
             REENTRANT_LOCK.lock();
             try {
                 if (instance == null){
-                    instance = new AESKeyStore();
+                    instance = new AESKeyStore(context);
                 }
             } catch (Exception e){ }
             finally {
@@ -42,71 +52,144 @@ public class AESKeyStore extends AESCryptor{
 
     private KeyStore keyStore;
     private SecretKey secretKey;
+    private WeakReference<Context> weakContext;
+    private AppStorage appStorage;
+    private Cryptor cryptor;
 
-    private AESKeyStore() {
-        super(ShaKey.Sha_256, AESMode.AES_ECB_PKCS5Padding, SecretKeyAlgo.AES);
+    private AESKeyStore(Context context) {
+        this.cryptor = Cryptor.create();
+        this.weakContext = new WeakReference<>(context);
+        this.appStorage = new AppStorage(context);
     }
 
-    private KeyStore getKeyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+    private KeyStore getKeyStore() throws RuntimeException {
         if (keyStore == null){
-            keyStore = KeyStore.getInstance(ANDROID_KEY_STORE);
-            keyStore.load(null);
+            try {
+                keyStore = KeyStore.getInstance(ANDROID_KEY_STORE);
+                keyStore.load(null);
+            } catch (KeyStoreException | NoSuchAlgorithmException
+                    | IOException | CertificateException e) {
+                throw new RuntimeException(e.getMessage());
+            }
         }
         return keyStore;
     }
 
-    @Override
-    public SecretKey getKeySpace(String mykey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        if (secretKey == null){
-            try {
-                //Load from KeyStore:
-                secretKey = (SecretKey) getKeyStore().getKey(SECRET_ALIAS, null);
-                //If not imported then, create and import:
-                if (secretKey == null){
-                    secretKey = generateSecretKey(SECRET_ALIAS, mykey);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        getKeyStore().setEntry(
-                                SECRET_ALIAS,
-                                new KeyStore.SecretKeyEntry(secretKey),
-                                new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                                        .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                                        .build());
-                    }
-                }
-            } catch (KeyStoreException e) {
-                e.printStackTrace();
-            } catch (UnrecoverableKeyException e) {
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InvalidAlgorithmParameterException e) {
-                e.printStackTrace();
-            } catch (NoSuchProviderException e) {
-                e.printStackTrace();
-            }
-        }
-        return secretKey;
+    private AppStorage getAppStorage() {
+        return appStorage;
     }
 
-    private SecretKey generateSecretKey(String alias, String myKey)
-            throws UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        //
-        return super.getKeySpace(myKey);
-        /*KeyGenerator keyGenerator = KeyGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            KeyGenParameterSpec.Builder builder =
-                    new KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT);
-            builder.setKeySize(256);
-            builder.setBlockModes(KeyProperties.BLOCK_MODE_CBC);
-            builder.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
-            keyGenerator.init(builder.build());
+    private Context getContext() {
+        return weakContext.get();
+    }
+
+    @Override
+    public Cryptor getCryptor() {
+        return cryptor;
+    }
+
+    public String encrypt(String alias, String text) throws RuntimeException{
+        String secret = getStoredSecret(alias);
+        return getCryptor().encrypt(secret, text);
+    }
+
+    public String decrypt(String alias, String text) throws RuntimeException{
+        String secret = getStoredSecret(alias);
+        return getCryptor().decrypt(secret, text);
+    }
+
+    public void storeSecret(String alias, String secret) throws RuntimeException{
+        try {
+            Key pbKey = createSecretKey(alias, getContext());
+            if (pbKey == null) {
+                Log.d(TAG, "storeSecret: " + "Already exist.");
+                KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
+                if (entry instanceof KeyStore.PrivateKeyEntry){
+                    pbKey = ((KeyStore.PrivateKeyEntry) entry).getCertificate().getPublicKey();
+                } else if(entry instanceof KeyStore.SecretKeyEntry) {
+                    pbKey = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
+                }
+            }
+            //
+            if (pbKey instanceof RSAPublicKey){
+                String encrypted = encryptUsingRsaPublicKey((RSAPublicKey)pbKey, secret);
+                getAppStorage().put(alias, encrypted);
+            }else if (pbKey instanceof SecretKey){
+                String encrypted = encryptUsingAesSecretKey((SecretKey)pbKey, secret);
+                getAppStorage().put(alias, encrypted);
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+            throw new RuntimeException(e.getMessage());
         }
-        // This key will work with a CipherObject ...
-        SecretKey key = keyGenerator.generateKey();
-        return key;*/
+    }
+
+    private String encryptUsingAesSecretKey(SecretKey pbKey, String secret) {
+        return null;
+    }
+
+    private String encryptUsingRsaPublicKey(RSAPublicKey pbKey, String secret) {
+        return null;
+    }
+
+    public String getStoredSecret(String alias) throws RuntimeException {
+        try {
+            String encryptedRandDeviceKey = getAppStorage().stringValue(alias);
+            KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
+            if (entry instanceof KeyStore.PrivateKeyEntry){
+                RSAPublicKey key = (RSAPublicKey) ((KeyStore.PrivateKeyEntry) entry).getCertificate().getPublicKey();
+                return decryptUsingRsaPublicKey(key, encryptedRandDeviceKey);
+            } else if(entry instanceof KeyStore.SecretKeyEntry) {
+                SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
+                return decryptUsingAesSecretKey(key, encryptedRandDeviceKey);
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return "";
+    }
+
+    private String decryptUsingAesSecretKey(SecretKey key, String encryptedRandDeviceKey) {
+        return null;
+    }
+
+    private String decryptUsingRsaPublicKey(RSAPublicKey key, String encryptedRandDeviceKey) {
+        return null;
+    }
+
+    protected Key createSecretKey(String alias, Context context)
+            throws RuntimeException {
+        //Pre-Check if already created:
+        try {
+            if (getKeyStore().containsAlias(alias)) return null;
+            //
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                KeyGenerator keyGenerator = KeyGenerator.getInstance(
+                        KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE);
+                KeyGenParameterSpec.Builder builder =
+                        new KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT);
+                builder.setKeySize(256);
+                builder.setBlockModes(KeyProperties.BLOCK_MODE_CBC);
+                builder.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
+                keyGenerator.init(builder.build());
+                // This key will work with a CipherObject ...
+                SecretKey key = keyGenerator.generateKey();
+                return key;
+            } else{
+                KeyPairGenerator generator = KeyPairGenerator.getInstance(
+                        KeyProperties.KEY_ALGORITHM_RSA, ANDROID_KEY_STORE);
+                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+                        .setAlias(alias)
+                        .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
+                        .setSerialNumber(BigInteger.ONE)
+                        .build();
+                generator.initialize(spec);
+                // This key will work with a CipherObject ...
+                KeyPair pair = generator.generateKeyPair();
+                return pair.getPublic();
+            }
+        } catch (NoSuchAlgorithmException | NoSuchProviderException
+                | InvalidAlgorithmParameterException | KeyStoreException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }
