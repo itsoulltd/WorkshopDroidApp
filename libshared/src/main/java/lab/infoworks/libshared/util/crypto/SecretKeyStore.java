@@ -8,6 +8,8 @@ import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.Log;
 
+import com.google.android.gms.common.util.IOUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -172,9 +174,36 @@ public class SecretKeyStore implements iSecretKeyStore{
         }
     }
 
-    private String encryptUsingRsaPublicKey(RSAPublicKey pbKey, String secret) throws RuntimeException{
-        //TODO:
-        throw new RuntimeException("NOT IMPLEMENTED YET!");
+    private String encryptUsingRsaPublicKey(PublicKey pbKey, String secret) throws RuntimeException{
+        try {
+            Cipher input = SecretKeyStore.cipherForRSA();
+            input.init(Cipher.ENCRYPT_MODE, pbKey);
+            //
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            CipherOutputStream cios = new CipherOutputStream(
+                    baos, input);
+            cios.write(secret.getBytes(StandardCharsets.UTF_8));
+            cios.close();
+            //
+            byte [] encryptedBytes = baos.toByteArray();
+            String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+            Log.d("StarterApp", "encryptUsingAesSecretKey: " + encrypted);
+            return encrypted;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException
+                | IOException | InvalidKeyException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public static Cipher cipherForRSA() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) { // below android m
+            // error in android 6: InvalidKeyException: Need RSA private or public key
+            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+        }
+        else { // android m and above
+            // error in android 5: NoSuchProviderException: Provider not available: AndroidKeyStoreBCWorkaround
+            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidKeyStoreBCWorkaround");
+        }
     }
 
     public String getStoredSecret(String alias) throws RuntimeException {
@@ -208,8 +237,8 @@ public class SecretKeyStore implements iSecretKeyStore{
             //
             Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
             byte[] encryptedBytes = Base64.decode(encrypted.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
-            //
             byte[] readBytes = cipher.doFinal(encryptedBytes);
+            //
             String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
             return decryptedText;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException
@@ -219,9 +248,23 @@ public class SecretKeyStore implements iSecretKeyStore{
         }
     }
 
-    private String decryptUsingRsaPrivateKey(RSAPrivateKey key, String encryptedRandDeviceKey) throws RuntimeException{
-        //TODO:
-        throw new RuntimeException("NOT IMPLEMENTED YET!");
+    private String decryptUsingRsaPrivateKey(PrivateKey key, String encrypted) throws RuntimeException {
+        try {
+            Cipher cipher = SecretKeyStore.cipherForRSA();
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            //
+            Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
+            byte[] encryptedBytes = Base64.decode(encrypted, Base64.DEFAULT);
+            CipherInputStream cis = new CipherInputStream(new ByteArrayInputStream(encryptedBytes), cipher);
+            byte[] readBytes = IOUtils.readInputStreamFully(cis);
+            cis.close();
+            //
+            String decrypted = new String(readBytes, 0, readBytes.length, StandardCharsets.UTF_8);
+            return decrypted;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException
+                 | NoSuchProviderException | InvalidKeyException | IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     protected Key createSecretKey(String alias, Context context)
