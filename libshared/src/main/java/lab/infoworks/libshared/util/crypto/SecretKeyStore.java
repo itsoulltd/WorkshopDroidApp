@@ -8,8 +8,6 @@ import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.Log;
 
-import com.google.android.gms.common.util.IOUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,10 +23,11 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.util.Calendar;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.crypto.BadPaddingException;
@@ -51,12 +50,15 @@ public class SecretKeyStore implements iSecretKeyStore{
     private static volatile SecretKeyStore instance;
     private static final ReentrantLock REENTRANT_LOCK = new ReentrantLock();
 
-    public static SecretKeyStore init(Application context){
+    public static SecretKeyStore init(Application context, String keyAlgorithm){
         if (instance == null){
             REENTRANT_LOCK.lock();
             try {
                 if (instance == null){
-                    instance = new SecretKeyStore(context);
+                    keyAlgorithm = (keyAlgorithm != null && !keyAlgorithm.isEmpty())
+                            ? keyAlgorithm
+                            : KeyProperties.KEY_ALGORITHM_RSA;
+                    instance = new SecretKeyStore(context, keyAlgorithm);
                 }
             } catch (Exception e){ }
             finally {
@@ -66,21 +68,26 @@ public class SecretKeyStore implements iSecretKeyStore{
         return instance;
     }
 
+    public static SecretKeyStore init(Application context){
+        return init(context, KeyProperties.KEY_ALGORITHM_RSA);
+    }
+
     public static SecretKeyStore getInstance() throws RuntimeException{
         if (instance == null) throw new RuntimeException("Not instantiated!");
         return instance;
     }
 
     private KeyStore keyStore;
-    private SecretKey secretKey;
     private WeakReference<Context> weakContext;
     private AppStorage appStorage;
     private Cryptor cryptor;
+    private final String keyAlgorithm;
 
-    private SecretKeyStore(Context context) {
+    private SecretKeyStore(Context context, String keyAlgorithm) {
         this.cryptor = Cryptor.create();
         this.weakContext = new WeakReference<>(context);
         this.appStorage = new AppStorage(context);
+        this.keyAlgorithm = keyAlgorithm;
     }
 
     private KeyStore getKeyStore() throws RuntimeException {
@@ -138,8 +145,8 @@ public class SecretKeyStore implements iSecretKeyStore{
                 }
             }
             //
-            if (pbKey instanceof RSAPublicKey){
-                String encrypted = encryptUsingRsaPublicKey((RSAPublicKey)pbKey, secret);
+            if (pbKey instanceof PublicKey){
+                String encrypted = encryptUsingRsaPublicKey((PublicKey)pbKey, secret);
                 getAppStorage().put(alias, encrypted);
             }else if (pbKey instanceof SecretKey){
                 String encrypted = encryptUsingAesSecretKey((SecretKey)pbKey, secret);
@@ -154,12 +161,6 @@ public class SecretKeyStore implements iSecretKeyStore{
         try {
             Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
             cipher.init(Cipher.ENCRYPT_MODE, pbKey);
-            //
-            /*ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            CipherOutputStream cos = new CipherOutputStream(bos, cipher);
-            cos.write(secret.getBytes(StandardCharsets.UTF_8));
-            cos.close();
-            byte[] encryptedBytes = bos.toByteArray();*/
             //
             byte[] encryptedBytes = cipher.doFinal(secret.getBytes(StandardCharsets.UTF_8));
             String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
@@ -184,7 +185,7 @@ public class SecretKeyStore implements iSecretKeyStore{
             String encrypted = getAppStorage().stringValue(alias);
             KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
             if (entry instanceof KeyStore.PrivateKeyEntry){
-                RSAPrivateKey key = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
+                PrivateKey key = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
                 return decryptUsingRsaPrivateKey(key, encrypted);
             } else if(entry instanceof KeyStore.SecretKeyEntry) {
                 SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
@@ -196,7 +197,7 @@ public class SecretKeyStore implements iSecretKeyStore{
         return "";
     }
 
-    private String decryptUsingAesSecretKey(SecretKey key, String encrypted) throws RuntimeException{
+    private String decryptUsingAesSecretKey(SecretKey key, String encrypted) throws RuntimeException {
         try {
             Cipher decipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
             decipher.init(Cipher.ENCRYPT_MODE, key);
@@ -207,12 +208,6 @@ public class SecretKeyStore implements iSecretKeyStore{
             //
             Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
             byte[] encryptedBytes = Base64.decode(encrypted.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
-            /*ByteArrayInputStream bis = new ByteArrayInputStream(encryptedBytes);
-            CipherInputStream cis = new CipherInputStream(bis, cipher);
-            //byte[] readBytes = new byte[encryptedBytes.length];
-            //cis.read(readBytes);
-            byte[] readBytes = IOUtils.readInputStreamFully(cis, false);
-            cis.close();*/
             //
             byte[] readBytes = cipher.doFinal(encryptedBytes);
             String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
@@ -235,25 +230,36 @@ public class SecretKeyStore implements iSecretKeyStore{
         try {
             if (getKeyStore().containsAlias(alias)) return null;
             //
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (keyAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_AES)
+                    && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                //
                 KeyGenerator keyGenerator = KeyGenerator.getInstance(
                         KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE);
                 KeyGenParameterSpec.Builder builder =
                         new KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT);
-                builder.setKeySize(128);
+                builder.setKeySize(256);
                 builder.setBlockModes(KeyProperties.BLOCK_MODE_CBC);
                 builder.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
                 keyGenerator.init(builder.build());
                 // This key will work with a CipherObject ...
                 SecretKey key = keyGenerator.generateKey();
                 return key;
-            } else{
+            }
+            //
+            if(keyAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_RSA)) {
+                //
+                Calendar start = Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
+                end.add(Calendar.YEAR, 1);
+                //
                 KeyPairGenerator generator = KeyPairGenerator.getInstance(
                         KeyProperties.KEY_ALGORITHM_RSA, ANDROID_KEY_STORE);
                 KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                         .setAlias(alias)
                         .setSubject(new X500Principal("CN=Sample Name, O=Android Authority"))
                         .setSerialNumber(BigInteger.ONE)
+                        .setStartDate(start.getTime())
+                        .setEndDate(end.getTime())
                         .build();
                 generator.initialize(spec);
                 // This key will work with a CipherObject ...
@@ -264,5 +270,6 @@ public class SecretKeyStore implements iSecretKeyStore{
                 | InvalidAlgorithmParameterException | KeyStoreException e) {
             throw new RuntimeException(e.getMessage());
         }
+        return null;
     }
 }
