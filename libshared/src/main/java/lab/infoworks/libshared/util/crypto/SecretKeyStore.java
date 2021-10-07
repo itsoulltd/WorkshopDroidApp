@@ -159,6 +159,9 @@ public class SecretKeyStore implements iSecretKeyStore{
 
     public String getStoredSecret(String alias) throws RuntimeException {
         try {
+            if (!getKeyStore().containsAlias(alias)) {
+                throw new RuntimeException(alias + " Not Exist!");
+            }
             String encryptedRandDeviceKey = getAppStorage().stringValue(alias);
             KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
             if (entry instanceof KeyStore.PrivateKeyEntry){
