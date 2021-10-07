@@ -1,5 +1,6 @@
 package lab.infoworks.libshared.util.crypto;
 
+import android.app.Application;
 import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
@@ -45,7 +46,7 @@ public class SecretKeyStore implements iSecretKeyStore{
     private static volatile SecretKeyStore instance;
     private static final ReentrantLock REENTRANT_LOCK = new ReentrantLock();
 
-    public static SecretKeyStore getInstance(Context context){
+    public static SecretKeyStore init(Application context){
         if (instance == null){
             REENTRANT_LOCK.lock();
             try {
@@ -57,6 +58,11 @@ public class SecretKeyStore implements iSecretKeyStore{
                 REENTRANT_LOCK.unlock();
             }
         }
+        return instance;
+    }
+
+    public static SecretKeyStore getInstance() throws RuntimeException{
+        if (instance == null) throw new RuntimeException("Not instantiated!");
         return instance;
     }
 
