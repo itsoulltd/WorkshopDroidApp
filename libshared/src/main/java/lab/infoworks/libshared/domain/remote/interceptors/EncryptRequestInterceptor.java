@@ -33,17 +33,11 @@ public class EncryptRequestInterceptor implements EncryptInterceptor {
                     String bodyStr = bodyToString(originalBody);
                     String encoded = SecretKeyStore.getInstance()
                             .encrypt("towhid@gmail.com", bodyStr);
+                    encoded = encoded.replace(System.getProperty("line.separator"), "");
                     Message msg = new Message().setPayload(encoded);
                     byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
-                    //Writing new body-data into sink:
+                    //writing new body-data into sink:
                     sink.write(bytes);
-                    //
-                    /*Buffer buffer = new Buffer();
-                    buffer.write(bytes);
-                    buffer.writeTo(sink.outputStream());*/
-                        //
-                    /*RequestBody nBody = RequestBody.create(bytes, originalBody.contentType());
-                    nBody.writeTo(sink);*/
                 } else {
                     originalBody.writeTo(sink);
                 }
