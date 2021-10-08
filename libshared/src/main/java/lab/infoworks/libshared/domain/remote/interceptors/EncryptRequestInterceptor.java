@@ -44,8 +44,9 @@ public class EncryptRequestInterceptor implements EncryptInterceptor {
                         //
                     /*RequestBody nBody = RequestBody.create(bytes, originalBody.contentType());
                     nBody.writeTo(sink);*/
+                } else {
+                    originalBody.writeTo(sink);
                 }
-                originalBody.writeTo(sink);
             }
         };
     }

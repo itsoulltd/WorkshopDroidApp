@@ -17,7 +17,7 @@ public interface EncryptInterceptor extends Interceptor {
     @NonNull @Override
     default Response intercept(@NonNull Chain chain) throws IOException {
         Request original = chain.request();
-        if (original.body() == null) {
+        if (original.body() == null || original.body().contentLength() <= 0) {
             return chain.proceed(original);
         }
         //
