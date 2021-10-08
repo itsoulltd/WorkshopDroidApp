@@ -9,8 +9,9 @@ import java.io.IOException;
 
 import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.SecretServiceApi;
-import lab.infoworks.libshared.domain.remote.interceptors.DecryptResponseInterceptor;
-import lab.infoworks.libshared.domain.remote.interceptors.EncryptRequestInterceptor;
+import lab.infoworks.libshared.domain.remote.interceptors.DecryptedResponseInterceptor;
+import lab.infoworks.libshared.domain.remote.interceptors.EncryptedMessageInterceptor;
+import lab.infoworks.libshared.domain.remote.interceptors.EncryptedRequestInterceptor;
 import lab.infoworks.libshared.domain.repository.definition.SecretServiceRepository;
 
 public class SecretServiceRepositoryImpl implements SecretServiceRepository {
@@ -21,8 +22,9 @@ public class SecretServiceRepositoryImpl implements SecretServiceRepository {
         //
         this.apiService = RemoteConfig.getInstance(baseURL
                 , SecretServiceApi.class
-                , new EncryptRequestInterceptor()
-                /*, new DecryptResponseInterceptor()*/);
+                , new EncryptedMessageInterceptor("towhid@gmail.com")
+                /*, new EncryptedRequestInterceptor("towhid@gmail.com")*/
+                /*, new DecryptedResponseInterceptor("towhid@gmail.com")*/);
     }
 
     @Override

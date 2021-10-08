@@ -23,7 +23,11 @@ import lab.infoworks.libshared.domain.remote.RemoteConfig;
 import lab.infoworks.libshared.domain.remote.api.RiderPhotoApiService;
 import lab.infoworks.libshared.domain.repository.definition.RiderPhotoRepository;
 import lab.infoworks.libshared.domain.repository.definition.RiderRepository;
+import lab.infoworks.libshared.util.crypto.AESCryptor;
+import lab.infoworks.libshared.util.crypto.AESMode;
 import lab.infoworks.libshared.util.crypto.Cryptor;
+import lab.infoworks.libshared.util.crypto.SecretKeyAlgo;
+import lab.infoworks.libshared.util.crypto.ShaKey;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,6 +39,14 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
     private final DataSource<Integer, Rider> dataSource;
     private RiderPhotoApiService apiService;
     private AppDB db;
+    private Cryptor cryptor;
+
+    public Cryptor getCryptor() {
+        if (cryptor == null){
+            cryptor = new AESCryptor(ShaKey.Sha_1, AESMode.AES_ECB_PKCS5Padding, SecretKeyAlgo.AES);
+        }
+        return cryptor;
+    }
 
     public RiderRepositoryImpl(Context context, String localFirst, String baseUrl) {
         this.db = AppDB.getInstance(context);
@@ -117,7 +129,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
         Response<Map<String,String>> response = getPhotoApiService().fetchPhoto(userId, imgPath).execute();
         Map<String,String> json = response.body();
         String encrypted = json.get("img");
-        String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
+        String decryptedBase64 = getCryptor().decrypt(SECRET, encrypted);
         return decryptedBase64;
     }
 
@@ -128,7 +140,7 @@ public class RiderRepositoryImpl implements RiderRepository, RiderPhotoRepositor
             public void onResponse(Call<Map<String,String>> call, Response<Map<String,String>> response) {
                 Map<String,String> json = response.body();
                 String encrypted = json.get("img");
-                String decryptedBase64 = Cryptor.create().decrypt(SECRET, encrypted);
+                String decryptedBase64 = getCryptor().decrypt(SECRET, encrypted);
                 if(consumer != null) consumer.accept(decryptedBase64);
             }
 
