@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.infoworks.lab.rest.models.Message;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,6 +27,7 @@ import lab.infoworks.libshared.domain.shared.AssetManager;
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.app.StarterApp;
+import lab.infoworks.starter.util.DeviceUuid;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -84,6 +86,19 @@ public class AppFragment extends Fragment {
             Log.d(TAG, "===> result: " + verificationResult.isVerified());
             statusTextView.setText("Rider is verified.... :) ");
         });
+
+        //
+        ViewModelProviders.of(this)
+                .get(AppViewModel.class)
+                .getSecretObserver()
+                .observe(getViewLifecycleOwner(), (response) -> {
+                    //response from server
+                    if(response != null && response.getStatus() != 500) {
+                        statusTextView.setText(response.toString());
+                    } else{
+                        statusTextView.setText("Server side Error!!!");
+                    }
+                });
 
         return view;
     }
@@ -149,5 +164,30 @@ public class AppFragment extends Fragment {
     @OnClick(R.id.showDownloadsButton)
     public void showDownloads(){
         DownloadTracker.viewOnGoingDownloads(getActivity());
+    }
+
+    @OnClick(R.id.saveSecretBtn)
+    public void saveSecret(){
+        UUID uuid = new DeviceUuid(getContext()).getUuid();
+        ViewModelProviders.of(this)
+                .get(AppViewModel.class)
+                .saveSecret(StarterApp.SECRET_ALIAS, uuid.toString());
+    }
+
+    @OnClick(R.id.encryptTextBtn)
+    public void encryptText(){
+        ViewModelProviders.of(this)
+                .get(AppViewModel.class)
+                .getEncryptedText(StarterApp.SECRET_ALIAS);
+    }
+
+    @OnClick(R.id.sendMsgBtn)
+    public void sendMsg(){
+        //
+        Message myMsg = new Message().setPayload("Hello Team!?!");
+
+        ViewModelProviders.of(this)
+                .get(AppViewModel.class)
+                .sendMsg(StarterApp.SECRET_ALIAS, myMsg);
     }
 }
