@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.infoworks.lab.rest.models.Message;
+import com.infoworks.lab.rest.models.Response;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,7 @@ public class DecryptResponseInterceptor implements DecryptInterceptor {
                     String json = bodyToString(originalBody);
                     if (Message.isValidJson(json)){
                         try {
-                            Message msg = Message.unmarshal(Message.class, json);
+                            Message msg = Message.unmarshal(Response.class, json);
                             String decrypted = SecretKeyStore.getInstance()
                                     .decrypt("towhid@gmail.com", msg.getPayload());
                             msg.setPayload(decrypted);
