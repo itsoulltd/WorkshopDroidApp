@@ -190,7 +190,7 @@ public class SecretKeyStore implements iSecretKeyStore{
             //
             byte [] encryptedBytes = baos.toByteArray();
             String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
-            if(isDebugMode) Log.d("StarterApp", "encryptUsingAesSecretKey: " + encrypted);
+            if(isDebugMode) Log.d("StarterApp", "encryptUsingRsaPublicKey: " + encrypted);
             return encrypted;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException
                 | IOException | InvalidKeyException e) {
@@ -256,7 +256,7 @@ public class SecretKeyStore implements iSecretKeyStore{
             Cipher cipher = SecretKeyStore.cipherForRSA();
             cipher.init(Cipher.DECRYPT_MODE, key);
             //
-            if(isDebugMode) Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
+            if(isDebugMode) Log.d("StarterApp", "decryptUsingRsaPrivateKey: " + encrypted);
             byte[] encryptedBytes = Base64.decode(encrypted, Base64.DEFAULT);
             CipherInputStream cis = new CipherInputStream(new ByteArrayInputStream(encryptedBytes), cipher);
             byte[] readBytes = IOUtils.readInputStreamFully(cis);
