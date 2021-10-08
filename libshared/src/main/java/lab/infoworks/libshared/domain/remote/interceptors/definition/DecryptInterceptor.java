@@ -11,7 +11,7 @@ import okio.Buffer;
 
 public interface DecryptInterceptor extends Interceptor {
 
-    ResponseBody decrypt(ResponseBody originalBody);
+    ResponseBody decrypt(Response original);
 
     @NonNull @Override
     default Response intercept(@NonNull Chain chain) throws IOException {
@@ -21,12 +21,12 @@ public interface DecryptInterceptor extends Interceptor {
         }
         //
         Response decryptedResponse = original.newBuilder()
-                .body(decrypt(original.body()))
+                .body(decrypt(original))
                 .build();
         return decryptedResponse;
     }
 
-    default String bodyToString(final ResponseBody response){
+    default String readResponseBody(final ResponseBody response){
         try {
             final ResponseBody copy = response;
             final Buffer buffer = new Buffer();

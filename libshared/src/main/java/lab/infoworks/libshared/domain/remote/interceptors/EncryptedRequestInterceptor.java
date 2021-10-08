@@ -8,17 +8,23 @@ import java.nio.charset.StandardCharsets;
 import lab.infoworks.libshared.domain.remote.interceptors.definition.EncryptInterceptor;
 import lab.infoworks.libshared.util.crypto.SecretKeyStore;
 import okhttp3.MediaType;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-public class EncryptRequestInterceptor implements EncryptInterceptor {
+public class EncryptedRequestInterceptor implements EncryptInterceptor {
 
-    public RequestBody encrypt(RequestBody originalBody) {
+    private String keyAlias;
 
+    public EncryptedRequestInterceptor(String keyAlias) {
+        this.keyAlias = keyAlias;
+    }
+
+    public RequestBody encrypt(Request original) {
         return new RequestBody() {
 
             @Override public MediaType contentType() {
-                return originalBody.contentType();
+                return original.body().contentType();
             }
 
             @Override public long contentLength() throws IOException {
@@ -26,20 +32,20 @@ public class EncryptRequestInterceptor implements EncryptInterceptor {
             }
 
             @Override public void writeTo(BufferedSink sink) throws IOException {
-                String subtype = originalBody.contentType().subtype();
+                String subtype = original.body().contentType().subtype();
                 if(subtype.contains("json")
                     || subtype.contains("form")) {
                     //...
-                    String bodyStr = bodyToString(originalBody);
+                    String bodyStr = readRequestBody(original.body());
                     String encoded = SecretKeyStore.getInstance()
-                            .encrypt("towhid@gmail.com", bodyStr);
+                            .encrypt(keyAlias, bodyStr);
                     encoded = encoded.replace(System.getProperty("line.separator"), "");
                     Message msg = new Message().setPayload(encoded);
                     byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
                     //writing new body-data into sink:
                     sink.write(bytes);
                 } else {
-                    originalBody.writeTo(sink);
+                    original.body().writeTo(sink);
                 }
             }
         };

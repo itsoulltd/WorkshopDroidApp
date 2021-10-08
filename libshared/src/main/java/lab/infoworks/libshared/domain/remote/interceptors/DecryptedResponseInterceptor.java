@@ -8,31 +8,36 @@ import java.nio.charset.StandardCharsets;
 import lab.infoworks.libshared.domain.remote.interceptors.definition.DecryptInterceptor;
 import lab.infoworks.libshared.util.crypto.SecretKeyStore;
 import okhttp3.MediaType;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class DecryptResponseInterceptor implements DecryptInterceptor {
+public class DecryptedResponseInterceptor implements DecryptInterceptor {
 
-    public ResponseBody decrypt(ResponseBody originalBody) {
+    private String keyAlias;
 
-        MediaType contentType = originalBody.contentType();
-        ResponseBody body = originalBody;
+    public DecryptedResponseInterceptor(String keyAlias) {
+        this.keyAlias = keyAlias;
+    }
 
-        String subtype = originalBody.contentType().subtype();
+    public ResponseBody decrypt(Response original) {
+        //
+        MediaType contentType = original.body().contentType();
+        ResponseBody body = original.body();
+        //
+        String subtype = original.body().contentType().subtype();
         if (subtype.contains("text")){
-            String strRes = bodyToString(originalBody);
+            String strRes = readResponseBody(original.body());
             String decrypted = SecretKeyStore.getInstance()
-                    .decrypt("towhid@gmail.com", strRes);
-            //
+                    .decrypt(keyAlias, strRes);
             body = ResponseBody.create(decrypted.getBytes(StandardCharsets.UTF_8), contentType);
         } else if(subtype.contains("json")) {
-            String json = bodyToString(originalBody);
+            String json = readResponseBody(original.body());
             if (Message.isValidJson(json)){
                 try {
                     Message msg = Message.unmarshal(com.infoworks.lab.rest.models.Response.class, json);
                     String decrypted = SecretKeyStore.getInstance()
-                            .decrypt("towhid@gmail.com", msg.getPayload());
+                            .decrypt(keyAlias, msg.getPayload());
                     msg.setPayload(decrypted);
-                    //
                     body = ResponseBody.create(msg.toString().getBytes(StandardCharsets.UTF_8), contentType);
                 } catch (IOException e) {
                     e.printStackTrace();

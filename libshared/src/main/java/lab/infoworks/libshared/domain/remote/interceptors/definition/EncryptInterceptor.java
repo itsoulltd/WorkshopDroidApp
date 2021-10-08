@@ -12,7 +12,7 @@ import okio.Buffer;
 
 public interface EncryptInterceptor extends Interceptor {
 
-    RequestBody encrypt(RequestBody originalBody);
+    RequestBody encrypt(Request original);
 
     @NonNull @Override
     default Response intercept(@NonNull Chain chain) throws IOException {
@@ -22,12 +22,12 @@ public interface EncryptInterceptor extends Interceptor {
         }
         //
         Request encryptedRequest = original.newBuilder()
-                .method(original.method(), encrypt(original.body()))
+                .method(original.method(), encrypt(original))
                 .build();
         return chain.proceed(encryptedRequest);
     }
 
-    default String bodyToString(final RequestBody request){
+    default String readRequestBody(final RequestBody request){
         try {
             final RequestBody copy = request;
             final Buffer buffer = new Buffer();
