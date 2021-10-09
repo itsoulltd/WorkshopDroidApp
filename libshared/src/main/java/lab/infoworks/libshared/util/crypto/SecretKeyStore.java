@@ -61,6 +61,10 @@ public class SecretKeyStore implements iSecretKeyStore{
                     keyAlgorithm = (keyAlgorithm != null && !keyAlgorithm.isEmpty())
                             ? keyAlgorithm
                             : KeyProperties.KEY_ALGORITHM_RSA;
+                    //If the android os version is lower than API-Level-23, then key-algorithm must be RSA:
+                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M){
+                        keyAlgorithm = KeyProperties.KEY_ALGORITHM_RSA;
+                    }
                     instance = new SecretKeyStore(context, keyAlgorithm);
                 }
             } catch (Exception e){ }
