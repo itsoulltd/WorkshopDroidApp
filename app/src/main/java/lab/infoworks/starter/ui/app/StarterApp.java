@@ -25,17 +25,9 @@ public class StarterApp extends Application {
 
         //Generate Device UUID:
         UUID uuid = new DeviceUuid(getApplicationContext()).getUuid();
-        String uuidStrA = uuid.toString();
-        Log.d("StarterApp", "onCreate: stored uuid: " + uuidStrA);
 
         //Save the device uuid into KeyStore:
-        SecretKeyStore.init(this).storeSecret(SECRET_ALIAS, uuidStrA, false);
-
-        //Retrieve the saved uuid from KeyStore:
-        String uuidStrB = SecretKeyStore.getInstance().getStoredSecret(SECRET_ALIAS);
-        Log.d("StarterApp", "onCreate: retrieved uuid: " + uuidStrB);
-        Log.d("StarterApp", "onCreate: Length is " + (uuidStrB.length() == uuidStrA.length() ? "same" : "not-same"));
-        Log.d("StarterApp", "onCreate: Is Same? " + (uuidStrA.equalsIgnoreCase(uuidStrB) ? "YES" : "NO"));
+        SecretKeyStore.init(this).storeSecret(SECRET_ALIAS, uuid.toString(), false);
 
         //Register for Download Complete:
         DownloadTracker.registerReceiverForCompletion(this);
