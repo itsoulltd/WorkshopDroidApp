@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lab.infoworks.libshared.domain.remote.DownloadTracker;
-import lab.infoworks.libshared.util.crypto.SecretKeyStore;
+import lab.infoworks.libshared.util.crypto.shared.SecretKeyStore;
 import lab.infoworks.starter.BuildConfig;
 import lab.infoworks.starter.util.DeviceUuid;
 

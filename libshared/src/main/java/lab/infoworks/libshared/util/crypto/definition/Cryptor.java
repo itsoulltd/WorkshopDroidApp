@@ -1,9 +1,11 @@
-package lab.infoworks.libshared.util.crypto;
+package lab.infoworks.libshared.util.crypto.definition;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.SecretKey;
+
+import lab.infoworks.libshared.util.crypto.impl.AESCryptor;
 
 public interface Cryptor {
 
