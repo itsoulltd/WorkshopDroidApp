@@ -13,6 +13,7 @@ import com.google.android.gms.common.util.IOUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,9 @@ import javax.security.auth.x500.X500Principal;
 import lab.infoworks.libshared.BuildConfig;
 import lab.infoworks.libshared.domain.shared.AppStorage;
 import lab.infoworks.libshared.util.crypto.definition.Cryptor;
+import lab.infoworks.libshared.util.crypto.definition.IVectorIO;
 import lab.infoworks.libshared.util.crypto.definition.iSecretKeyStore;
+import lab.infoworks.libshared.util.crypto.impl.IVReadWriter;
 import lab.infoworks.libshared.util.crypto.models.AESMode;
 
 public class SecretKeyStore implements iSecretKeyStore {
@@ -87,12 +90,15 @@ public class SecretKeyStore implements iSecretKeyStore {
         return instance;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     private KeyStore keyStore;
     private WeakReference<Context> weakContext;
     private AppStorage appStorage;
     private Cryptor cryptor;
     private final String keyAlgorithm;
     private final boolean isDebugMode;
+    private final IVectorIO iVectorIO;
 
     private SecretKeyStore(Context context, String keyAlgorithm) {
         this.cryptor = Cryptor.create();
@@ -100,6 +106,7 @@ public class SecretKeyStore implements iSecretKeyStore {
         this.appStorage = new AppStorage(context);
         this.keyAlgorithm = keyAlgorithm;
         this.isDebugMode = BuildConfig.DEBUG;
+        this.iVectorIO = new IVReadWriter(context);
     }
 
     private KeyStore getKeyStore() throws RuntimeException {
@@ -121,6 +128,10 @@ public class SecretKeyStore implements iSecretKeyStore {
 
     private Context getContext() {
         return weakContext.get();
+    }
+
+    private IVectorIO getIV() {
+        return iVectorIO;
     }
 
     @Override
@@ -160,8 +171,9 @@ public class SecretKeyStore implements iSecretKeyStore {
             if (pbKey instanceof PublicKey){
                 String encrypted = encryptUsingRsaPublicKey((PublicKey)pbKey, secret);
                 getAppStorage().put(alias, encrypted);
-            }else if (pbKey instanceof SecretKey){
-                String encrypted = encryptUsingAesSecretKey((SecretKey)pbKey, secret);
+            }
+            else if (pbKey instanceof SecretKey){
+                String encrypted = encryptUsingAesSecretKey(alias, (SecretKey)pbKey, secret);
                 getAppStorage().put(alias, encrypted);
             }
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
@@ -169,11 +181,59 @@ public class SecretKeyStore implements iSecretKeyStore {
         }
     }
 
-    private String encryptUsingAesSecretKey(SecretKey pbKey, String secret) throws RuntimeException{
+    public String getStoredSecret(String alias) throws RuntimeException {
         try {
+            if (!getKeyStore().containsAlias(alias)) {
+                throw new RuntimeException(alias + " Not Exist!");
+            }
+            String encrypted = getAppStorage().stringValue(alias);
+            KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
+            //
+            if (entry instanceof KeyStore.PrivateKeyEntry){
+                PrivateKey key = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
+                return decryptUsingRsaPrivateKey(key, encrypted);
+            }
+            else if(entry instanceof KeyStore.SecretKeyEntry) {
+                SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
+                return decryptUsingAesSecretKey(alias, key, encrypted);
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return "";
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Cipher aesCipher;
+    private Cipher aesDecipher;
+
+    private Cipher getAesCipher(String alias, SecretKey pbKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+        if (this.aesCipher == null){
             Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
             cipher.init(Cipher.ENCRYPT_MODE, pbKey);
-            //
+            this.aesCipher = cipher;
+            /*if (!getIV().isSaved(alias))*/
+            getIV().write(alias, this.aesCipher.getIV());
+        }
+        return aesCipher;
+    }
+
+    private Cipher getAesDecipher(String alias, SecretKey pbKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException {
+        if (this.aesDecipher == null){
+            //byte[] ivs = getCipher(alias).getIV();
+            byte[] ivs = getIV().read(alias);
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(ivs);
+            Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
+            cipher.init(Cipher.DECRYPT_MODE, pbKey, ivParameterSpec);
+            this.aesDecipher = cipher;
+        }
+        return aesDecipher;
+    }
+
+    private String encryptUsingAesSecretKey(String alias, SecretKey pbKey, String secret) throws RuntimeException{
+        try {
+            Cipher cipher = getAesCipher(alias, pbKey);
             byte[] encryptedBytes = cipher.doFinal(secret.getBytes(StandardCharsets.UTF_8));
             String encrypted = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
             if(isDebugMode) Log.d("StarterApp", "encryptUsingAesSecretKey: " + encrypted);
@@ -181,6 +241,33 @@ public class SecretKeyStore implements iSecretKeyStore {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException
                 | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private String decryptUsingAesSecretKey(String alias, SecretKey key, String encrypted) throws RuntimeException {
+        try {
+            Cipher cipher = getAesDecipher(alias, key);
+            if(isDebugMode) Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
+            byte[] encryptedBytes = Base64.decode(encrypted.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
+            byte[] readBytes = cipher.doFinal(encryptedBytes);
+            //
+            String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
+            return decryptedText;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException
+                | InvalidKeyException | BadPaddingException
+                | InvalidAlgorithmParameterException | IllegalBlockSizeException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public static Cipher cipherForRSA() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) { // below android m
+            // error in android 6: InvalidKeyException: Need RSA private or public key
+            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+        }
+        else { // android m and above
+            // error in android 5: NoSuchProviderException: Provider not available: AndroidKeyStoreBCWorkaround
+            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidKeyStoreBCWorkaround");
         }
     }
 
@@ -205,59 +292,6 @@ public class SecretKeyStore implements iSecretKeyStore {
         }
     }
 
-    public static Cipher cipherForRSA() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) { // below android m
-            // error in android 6: InvalidKeyException: Need RSA private or public key
-            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-        }
-        else { // android m and above
-            // error in android 5: NoSuchProviderException: Provider not available: AndroidKeyStoreBCWorkaround
-            return Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidKeyStoreBCWorkaround");
-        }
-    }
-
-    public String getStoredSecret(String alias) throws RuntimeException {
-        try {
-            if (!getKeyStore().containsAlias(alias)) {
-                throw new RuntimeException(alias + " Not Exist!");
-            }
-            String encrypted = getAppStorage().stringValue(alias);
-            KeyStore.Entry entry = getKeyStore().getEntry(alias, null);
-            if (entry instanceof KeyStore.PrivateKeyEntry){
-                PrivateKey key = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
-                return decryptUsingRsaPrivateKey(key, encrypted);
-            } else if(entry instanceof KeyStore.SecretKeyEntry) {
-                SecretKey key = ((KeyStore.SecretKeyEntry) entry).getSecretKey();
-                return decryptUsingAesSecretKey(key, encrypted);
-            }
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-        return "";
-    }
-
-    private String decryptUsingAesSecretKey(SecretKey key, String encrypted) throws RuntimeException {
-        try {
-            Cipher decipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
-            decipher.init(Cipher.ENCRYPT_MODE, key);
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(decipher.getIV());
-            //
-            Cipher cipher = Cipher.getInstance(AESMode.AES_CBC_PKCS7Padding.value());
-            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
-            //
-            if(isDebugMode) Log.d("StarterApp", "decryptUsingAesSecretKey: " + encrypted);
-            byte[] encryptedBytes = Base64.decode(encrypted.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
-            byte[] readBytes = cipher.doFinal(encryptedBytes);
-            //
-            String decryptedText = new String(readBytes, StandardCharsets.UTF_8);
-            return decryptedText;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException
-                | InvalidKeyException | BadPaddingException
-                | InvalidAlgorithmParameterException | IllegalBlockSizeException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
     private String decryptUsingRsaPrivateKey(PrivateKey key, String encrypted) throws RuntimeException {
         try {
             Cipher cipher = SecretKeyStore.cipherForRSA();
@@ -272,7 +306,7 @@ public class SecretKeyStore implements iSecretKeyStore {
             String decrypted = new String(readBytes, 0, readBytes.length, StandardCharsets.UTF_8);
             return decrypted;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException
-                 | NoSuchProviderException | InvalidKeyException | IOException e) {
+                | NoSuchProviderException | InvalidKeyException | IOException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -325,4 +359,6 @@ public class SecretKeyStore implements iSecretKeyStore {
         }
         return null;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }
