@@ -18,14 +18,16 @@ import com.it.soul.lab.sql.query.models.Property;
 
 import lab.infoworks.libshared.domain.model.Rider;
 import lab.infoworks.libshared.notifications.NotificationCenter;
-import lab.infoworks.libui.BaseActivity.NavStack;
+import lab.infoworks.libui.activities.BaseActivity;
+import lab.infoworks.libui.activities.NavStack;
+import lab.infoworks.libui.activities.decorator.NetworkDecorator;
 import lab.infoworks.starter.R;
 import lab.infoworks.starter.ui.activities.riderDetail.RiderFragment;
 import lab.infoworks.starter.ui.activities.riderList.RiderListViewModel;
 import lab.infoworks.starter.ui.activities.riderList.RidersFragment;
 
 
-public class AppActivity extends AppCompatActivity {
+public class AppActivity extends BaseActivity {
 
     private static final String TAG = AppActivity.class.getName();
 
@@ -33,6 +35,9 @@ public class AppActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_v2);
+        //Adding Decorators:
+        new NetworkDecorator(this);
+        //new LocationDetector(this);
         /**/
         //Setting Up ActionBar Title
         ActionBar actionBar = getSupportActionBar();

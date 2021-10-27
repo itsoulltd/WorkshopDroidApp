@@ -1,11 +1,11 @@
-package lab.infoworks.libui.BaseActivity;
+package lab.infoworks.libui.activities;
 
 import android.os.Bundle;
 import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
-public abstract class KeepScreenOnActivity extends BaseNetworkActivity {
+public abstract class KeepScreenOnActivity extends BaseActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -18,5 +18,10 @@ public abstract class KeepScreenOnActivity extends BaseNetworkActivity {
         super.onDestroy();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+    }
+
+    @Override
+    public void onBottomSheetButtonClick(int refCode) {
+        //TODO:
     }
 }

@@ -1,4 +1,4 @@
-package lab.infoworks.libui.BaseActivity;
+package lab.infoworks.libui.activities;
 
 import android.os.Bundle;
 
@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.it.soul.lab.sql.query.models.DataType;
 import com.it.soul.lab.sql.query.models.Property;
 
 import java.util.ArrayList;

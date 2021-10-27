@@ -1,4 +1,4 @@
-package lab.infoworks.libui.BaseActivity;
+package lab.infoworks.libui.activities;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -17,8 +17,13 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import lab.infoworks.libshared.notifications.NotificationCenter;
 import lab.infoworks.libshared.notifications.NotificationType;
+import lab.infoworks.libui.activities.decorator.ActivityDecorator;
 import lab.infoworks.libui.alert.AlertSheetFragment;
 
 public abstract class BaseActivity extends AppCompatActivity implements AlertSheetFragment.OnFragmentInteractionListener{
@@ -28,54 +33,123 @@ public abstract class BaseActivity extends AppCompatActivity implements AlertShe
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        //Log.d(TAG, "onSaveInstanceState");
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Log.d(TAG, "onCreate");
         //subscribe to notifications listener in onCreate of activity
         NotificationCenter.addObserver(this, NotificationType.FORCE_SIGN_OUT.name(), (context, intent) -> {
             //TODO:
             //Global Logout From Here!
         });
+        Log.d(TAG, "onCreate");
     }
-
-    //FIXME: Refactoring to all child activity:
-    /*protected abstract void initViews();
-    protected abstract void loadContents();
-    protected abstract void initListeners();*/
 
     @Override
     protected void onStart() {
         super.onStart();
-        //Log.d(TAG, "onStart");
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onStart();
+            }
+        }
+        Log.d(TAG, "onStart");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //Log.d(TAG, "onResume");
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onResume();
+            }
+        }
+        Log.d(TAG, "onResume");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        //Log.d(TAG, "onPause");
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onPause();
+            }
+        }
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onRestart();
+            }
+        }
+        Log.d(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onStop();
+            }
+        }
+        Log.d(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //Log.d(TAG, "onDestroy");
         // Don't forget to unsubscribe from notifications listener
         NotificationCenter.removeObserver(this, NotificationType.FORCE_SIGN_OUT.name());
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onDestroy();
+            }
+        }
+        Log.d(TAG, "onDestroy");
+    }
+
+    private Set<ActivityDecorator> _decorators;
+    protected Collection<ActivityDecorator> getDecorators() {
+        return _decorators;
+    }
+
+    public void setDecorator(ActivityDecorator decorator) {
+        if (_decorators == null){
+            _decorators = new HashSet<>();
+        }
+        _decorators.add(decorator);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator :
+                    getDecorators()) {
+                decorator.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator :
+                    getDecorators()) {
+                decorator.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+        }
     }
 
     ///////////////////////////////////////////////
 
-    public AlertDialog.Builder createAlertBuilder() {
+    protected AlertDialog.Builder createAlertBuilder() {
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
@@ -85,13 +159,13 @@ public abstract class BaseActivity extends AppCompatActivity implements AlertShe
         return builder;
     }
 
-    public void copyToClipBoard(String data) {
+    protected void copyToClipBoard(String data) {
         ClipboardManager clipboardManager = (ClipboardManager) this.getSystemService(this.CLIPBOARD_SERVICE);
         ClipData clipData = ClipData.newPlainText("Copied to clipboard", data);
         clipboardManager.setPrimaryClip(clipData);
     }
 
-    public void gotoPlayStore(){
+    protected void gotoPlayStore(){
         final String appPackageName = getPackageName();
         try {
             this.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
@@ -100,21 +174,20 @@ public abstract class BaseActivity extends AppCompatActivity implements AlertShe
         }
     }
 
-    //////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-    protected void showBottomSheet(String tag, int refCode, String message) {
+    public void showBottomSheet(String tag, int refCode, String message) {
         //Log.d(TAG, "showBottomSheet: " + tag);
         if (getSupportFragmentManager().findFragmentByTag(tag) != null)
             return;
-        AlertSheetFragment bottomSheetFragment = AlertSheetFragment.newInstance(refCode
-                , message);
+        AlertSheetFragment bottomSheetFragment = AlertSheetFragment.newInstance(refCode, message);
         bottomSheetFragment.setCancelable(false);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.add(bottomSheetFragment, tag);
         ft.commitAllowingStateLoss();
     }
 
-    protected void closeBottomSheet(String tag) {
+    public void closeBottomSheet(String tag) {
         //Log.d(TAG, "closeBottomSheet: " + tag);
         AlertSheetFragment bottomSheetFragment = (AlertSheetFragment) getSupportFragmentManager()
                 .findFragmentByTag(tag);
@@ -123,7 +196,16 @@ public abstract class BaseActivity extends AppCompatActivity implements AlertShe
         }
     }
 
-    //////////////////////////////////////////////
+    @Override
+    public void onBottomSheetButtonClick(int refCode) {
+        if (getDecorators() != null) {
+            for (ActivityDecorator decorator : getDecorators()) {
+                decorator.onBottomSheetButtonClick(refCode);
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     private static final Integer PLAY_SERVICES_RESOLUTION_REQUEST = 2404;
 
