@@ -77,8 +77,7 @@ public class AppFragment extends Fragment {
 
         statusTextView.setText(fragTitle);
         //
-        ViewModelProviders
-                .of(this)
+        ViewModelProviders.of(this)
                 .get(AppViewModel.class)
                 .getUserStatusObservable()
                 .observe(getViewLifecycleOwner(), verificationResult -> {
