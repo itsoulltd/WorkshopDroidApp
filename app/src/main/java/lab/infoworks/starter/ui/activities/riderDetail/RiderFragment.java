@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
@@ -126,15 +127,18 @@ public class RiderFragment extends Fragment {
                 .addTag("getPhotos")
                 .setConstraints(constraints)
                 .build();
+        WorkManager.getInstance(getContext()).cancelAllWorkByTag("getPhotos");
+        WorkManager.getInstance(getContext()).enqueue(request);
+        //
         //Example of Repeatable WorkRequest:
-        /*request = new PeriodicWorkRequest.Builder(EncryptedFileFetchingWorker.class, 15, TimeUnit.MINUTES)
+        /*PeriodicWorkRequest pRequest = new PeriodicWorkRequest.Builder(EncryptedFileFetchingWorker.class, 15, TimeUnit.MINUTES)
                 .setInputData(data)
                 .addTag("getPhotos")
                 .setConstraints(constraints)
                 .build();
-        WorkManager.getInstance(getContext()).cancelAllWorkByTag("getPhotos");*/
-        //
-        WorkManager.getInstance(getContext()).enqueue(request);
+        WorkManager.getInstance(getContext()).enqueueUniquePeriodicWork("getPhotos"
+                , ExistingPeriodicWorkPolicy.KEEP
+                , pRequest);*/
     }
 
     private void addNestedFragment() {
